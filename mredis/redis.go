@@ -14,8 +14,8 @@ import (
 // baseKey 基础key
 var baseKey = ""
 
-// RedisCreate 创建数据库
-func RedisCreate(address string, password string, dbIndex int) *redis.Client {
+// Create 创建数据库
+func Create(address string, password string, dbIndex int) *redis.Client {
 	client := redis.NewClient(&redis.Options{
 		Addr:     address,
 		Password: password, // no password set
@@ -29,13 +29,13 @@ func RedisCreate(address string, password string, dbIndex int) *redis.Client {
 	return client
 }
 
-// RedisSetBaseKey 设置基础key
-func RedisSetBaseKey(v string) {
+// SetBaseKey 设置基础key
+func SetBaseKey(v string) {
 	baseKey = v
 }
 
-// RedisGet 获取
-func RedisGet(ctx context.Context, client *redis.Client, key string) (string, error) {
+// Get 获取
+func Get(ctx context.Context, client *redis.Client, key string) (string, error) {
 	key = fmt.Sprintf("%s_%s", baseKey, key)
 	ret, err := client.WithContext(ctx).Get(key).Result()
 	if err != nil {
@@ -48,8 +48,8 @@ func RedisGet(ctx context.Context, client *redis.Client, key string) (string, er
 	return ret, nil
 }
 
-// RedisSet 设置
-func RedisSet(ctx context.Context, client *redis.Client, key, value string, du time.Duration) error {
+// Set 设置
+func Set(ctx context.Context, client *redis.Client, key, value string, du time.Duration) error {
 	key = fmt.Sprintf("%s_%s", baseKey, key)
 	err := client.WithContext(ctx).Set(key, value, du).Err()
 	if err != nil {
@@ -58,8 +58,8 @@ func RedisSet(ctx context.Context, client *redis.Client, key, value string, du t
 	return nil
 }
 
-// RedisRm 删除
-func RedisRm(ctx context.Context, client *redis.Client, key string) error {
+// Rm 删除
+func Rm(ctx context.Context, client *redis.Client, key string) error {
 	key = fmt.Sprintf("%s_%s", baseKey, key)
 	err := client.WithContext(ctx).Del(key).Err()
 	if err != nil {

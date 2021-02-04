@@ -1,4 +1,4 @@
-package mweixin
+package mwechat
 
 import (
 	"crypto/tls"
@@ -64,8 +64,8 @@ type StRefundRespXML struct {
 	CashRefundFee     int64    `xml:"cash_refund_fee"`
 }
 
-// WechatGetPrepay 获取预支付信息
-func WechatGetPrepay(appID, mchID, mchKey, payBody, outTradeNo, clientIP, cbURL, tradeType, openID string, totalFee int64) (gin.H, error) {
+// PayV1GetPrepay 获取预支付信息
+func PayV1GetPrepay(appID, mchID, mchKey, payBody, outTradeNo, clientIP, cbURL, tradeType, openID string, totalFee int64) (gin.H, error) {
 	retryCount := 0
 	nonce := mutils.GetUUIDStr()
 	sendBody := gin.H{
@@ -80,7 +80,7 @@ func WechatGetPrepay(appID, mchID, mchKey, payBody, outTradeNo, clientIP, cbURL,
 		"trade_type":       tradeType,
 		"openid":           openID,
 	}
-	sendBody["sign"] = WechatGetSign(mchKey, sendBody)
+	sendBody["sign"] = GetSign(mchKey, sendBody)
 	sendBodyBs, err := xml.Marshal(sendBody)
 	if err != nil {
 		return nil, err
@@ -102,7 +102,7 @@ GotoHttpRetry:
 	if err != nil {
 		return nil, err
 	}
-	if !WechatCheckSign(mchKey, respMap) {
+	if !CheckSign(mchKey, respMap) {
 		return nil, fmt.Errorf("sign error: %s", body)
 	}
 	type stRespXMLXML struct {
@@ -133,18 +133,18 @@ GotoHttpRetry:
 		"package":   fmt.Sprintf("%s=%s", "prepay_id", respXML.PrepayID),
 		"signType":  "MD5",
 	}
-	jsMap["paySign"] = WechatGetSign(mchKey, jsMap)
+	jsMap["paySign"] = GetSign(mchKey, jsMap)
 	return jsMap, nil
 }
 
-// WechatCheckCb 验证回调
-func WechatCheckCb(mchKey string, body []byte) (*StWeChatCbBody, error) {
+// PayV1CheckCb 验证回调
+func PayV1CheckCb(mchKey string, body []byte) (*StWeChatCbBody, error) {
 	bodyMap, err := XMLWalk(body)
 	if err != nil {
 		// 返回数据
 		return nil, err
 	}
-	if !WechatCheckSign(mchKey, bodyMap) {
+	if !CheckSign(mchKey, bodyMap) {
 		return nil, fmt.Errorf("sign error")
 	}
 
@@ -159,8 +159,8 @@ func WechatCheckCb(mchKey string, body []byte) (*StWeChatCbBody, error) {
 	return &bodyXML, nil
 }
 
-// WechatRefund 申请退款
-func WechatRefund(cer tls.Certificate, appID, mchID, mchKey, transactionID, outRefundNo, cbURL string, totalFee, refundFee int64) (*StRefundRespXML, error) {
+// PayV1Refund 申请退款
+func PayV1Refund(cer tls.Certificate, appID, mchID, mchKey, transactionID, outRefundNo, cbURL string, totalFee, refundFee int64) (*StRefundRespXML, error) {
 	retryCount := 0
 	nonce := mutils.GetUUIDStr()
 	sendBody := gin.H{
@@ -173,7 +173,7 @@ func WechatRefund(cer tls.Certificate, appID, mchID, mchKey, transactionID, outR
 		"refund_fee":     refundFee,
 		"notify_url":     cbURL,
 	}
-	sendBody["sign"] = WechatGetSign(mchKey, sendBody)
+	sendBody["sign"] = GetSign(mchKey, sendBody)
 	sendBodyBs, err := xml.Marshal(sendBody)
 	if err != nil {
 		return nil, err
@@ -196,7 +196,7 @@ GotoHttpRetry:
 	if err != nil {
 		return nil, err
 	}
-	if !WechatCheckSign(mchKey, respMap) {
+	if !CheckSign(mchKey, respMap) {
 		return nil, fmt.Errorf("sign error: %s", body)
 	}
 	var respXML StRefundRespXML

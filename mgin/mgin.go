@@ -18,27 +18,27 @@ import (
 	jsoniter "github.com/json-iterator/go"
 )
 
-// GinResp 通用返回
-type GinResp struct {
+// Resp 通用返回
+type Resp struct {
 	ErrCode int64  `json:"error"`
 	ErrMsg  string `json:"error_msg"`
 	Data    gin.H  `json:"data,omitempty"`
 }
 
-// GinRespSuccess 成功返回
-var GinRespSuccess = GinResp{
+// RespSuccess 成功返回
+var RespSuccess = Resp{
 	ErrCode: ErrorSuccess,
 	ErrMsg:  ErrorSuccessMsg,
 }
 
-// GinRespInternalErr 成功返回
-var GinRespInternalErr = GinResp{
+// RespInternalErr 成功返回
+var RespInternalErr = Resp{
 	ErrCode: ErrorInternal,
 	ErrMsg:  ErrorInternalMsg,
 }
 
-// GinRepeatReadBody 创建可重复度body
-func GinRepeatReadBody(c *gin.Context) error {
+// RepeatReadBody 创建可重复度body
+func RepeatReadBody(c *gin.Context) error {
 	var err error
 	var body []byte
 	if cb, ok := c.Get(gin.BodyBytesKey); ok {
@@ -59,16 +59,16 @@ func GinRepeatReadBody(c *gin.Context) error {
 	return nil
 }
 
-// GinFillBindError 检测gin输入绑定错误
-func GinFillBindError(c *gin.Context, err error) {
-	repeatErr := GinRepeatReadBody(c)
+// FillBindError 检测gin输入绑定错误
+func FillBindError(c *gin.Context, err error) {
+	repeatErr := RepeatReadBody(c)
 	if repeatErr != nil {
 		mlog.Log.Errorf("err: [%T] %s", repeatErr, repeatErr.Error())
 	} else {
 		body, _ := ioutil.ReadAll(c.Request.Body)
 		mlog.Log.Warnf("bind error body is: %s", body)
 	}
-	GinDoRespErr(
+	DoRespErr(
 		c,
 		ErrorBind,
 		fmt.Sprintf("[%T] %s", err, err.Error()),
@@ -76,45 +76,36 @@ func GinFillBindError(c *gin.Context, err error) {
 	)
 }
 
-// GinFillSuccessData 填充返回数据
-func GinFillSuccessData(data gin.H) GinResp {
-	return GinResp{
-		ErrCode: ErrorSuccess,
-		ErrMsg:  ErrorSuccessMsg,
-		Data:    data,
-	}
-}
-
-// GinDoRespSuccess 返回成功信息
-func GinDoRespSuccess(c *gin.Context, data gin.H) {
-	c.JSON(http.StatusOK, GinResp{
+// DoRespSuccess 返回成功信息
+func DoRespSuccess(c *gin.Context, data gin.H) {
+	c.JSON(http.StatusOK, Resp{
 		ErrCode: ErrorSuccess,
 		ErrMsg:  ErrorSuccessMsg,
 		Data:    data,
 	})
 }
 
-// GinDoRespInternalErr 返回错误信息
-func GinDoRespInternalErr(c *gin.Context) {
-	c.JSON(http.StatusOK, GinResp{
+// DoRespInternalErr 返回错误信息
+func DoRespInternalErr(c *gin.Context) {
+	c.JSON(http.StatusOK, Resp{
 		ErrCode: ErrorInternal,
 		ErrMsg:  ErrorInternalMsg,
 	})
 }
 
-// GinDoRespErr 返回特殊错误
-func GinDoRespErr(c *gin.Context, code int64, msg string, data gin.H) {
-	c.JSON(http.StatusOK, GinResp{
+// DoRespErr 返回特殊错误
+func DoRespErr(c *gin.Context, code int64, msg string, data gin.H) {
+	c.JSON(http.StatusOK, Resp{
 		ErrCode: code,
 		ErrMsg:  msg,
 		Data:    data,
 	})
 }
 
-// GinDoEncRespSuccess 返回成功信息
-func GinDoEncRespSuccess(c *gin.Context, key string, isAll bool, data gin.H) {
+// DoEncRespSuccess 返回成功信息
+func DoEncRespSuccess(c *gin.Context, key string, isAll bool, data gin.H) {
 	var err error
-	resp := GinResp{
+	resp := Resp{
 		ErrCode: ErrorSuccess,
 		ErrMsg:  ErrorSuccessMsg,
 		Data:    data,
@@ -123,7 +114,7 @@ func GinDoEncRespSuccess(c *gin.Context, key string, isAll bool, data gin.H) {
 	if data != nil {
 		respBs, err = jsoniter.Marshal(data)
 		if err != nil {
-			GinDoRespInternalErr(c)
+			DoRespInternalErr(c)
 			return
 		}
 	} else {
@@ -131,7 +122,7 @@ func GinDoEncRespSuccess(c *gin.Context, key string, isAll bool, data gin.H) {
 	}
 	encResp, err := mencrypt.AesEncrypt(string(respBs), key)
 	if err != nil {
-		GinDoRespInternalErr(c)
+		DoRespInternalErr(c)
 		return
 	}
 	if isAll {
@@ -144,23 +135,23 @@ func GinDoEncRespSuccess(c *gin.Context, key string, isAll bool, data gin.H) {
 	c.JSON(http.StatusOK, resp)
 }
 
-// GinMidRepeatReadBody 创建可重复度body
-func GinMidRepeatReadBody(c *gin.Context) {
-	err := GinRepeatReadBody(c)
+// MidRepeatReadBody 创建可重复度body
+func MidRepeatReadBody(c *gin.Context) {
+	err := RepeatReadBody(c)
 	if err != nil {
 		mlog.Log.Errorf("err: [%T] %s", err, err.Error())
-		GinDoRespInternalErr(c)
+		DoRespInternalErr(c)
 		c.Abort()
 		return
 	}
 }
 
-// GinMinTokenToUserID token转换为user_id
-func GinMinTokenToUserID(tx mmysql.DbExeAble, getUserIDByToken func(ctx context.Context, tx mmysql.DbExeAble, token string) (int64, error)) func(*gin.Context) {
+// MinTokenToUserID token转换为user_id
+func MinTokenToUserID(tx mmysql.DbExeAble, getUserIDByToken func(ctx context.Context, tx mmysql.DbExeAble, token string) (int64, error)) func(*gin.Context) {
 	return func(c *gin.Context) {
-		err := GinRepeatReadBody(c)
+		err := RepeatReadBody(c)
 		if err != nil {
-			GinDoRespInternalErr(c)
+			DoRespInternalErr(c)
 			c.Abort()
 			return
 		}
@@ -170,26 +161,26 @@ func GinMinTokenToUserID(tx mmysql.DbExeAble, getUserIDByToken func(ctx context.
 		err = c.ShouldBind(&req)
 		if err != nil {
 			mlog.Log.Errorf("err: [%T] %s", err, err.Error())
-			GinFillBindError(c, err)
+			FillBindError(c, err)
 			c.Abort()
 			return
 		}
-		bodyErr := GinRepeatReadBody(c)
+		bodyErr := RepeatReadBody(c)
 		if bodyErr != nil {
 			mlog.Log.Errorf("err: [%T] %s", bodyErr, bodyErr.Error())
-			GinDoRespInternalErr(c)
+			DoRespInternalErr(c)
 			c.Abort()
 			return
 		}
 		userID, err := getUserIDByToken(c, tx, req.Token)
 		if err != nil {
 			mlog.Log.Errorf("err: [%T] %s", err, err.Error())
-			GinDoRespInternalErr(c)
+			DoRespInternalErr(c)
 			c.Abort()
 			return
 		}
 		if userID == 0 {
-			GinDoRespErr(c, ErrorToken, ErrorTokenMsg, nil)
+			DoRespErr(c, ErrorToken, ErrorTokenMsg, nil)
 			c.Abort()
 			return
 		}
@@ -198,12 +189,12 @@ func GinMinTokenToUserID(tx mmysql.DbExeAble, getUserIDByToken func(ctx context.
 	}
 }
 
-// GinMinTokenToUserIDRedis token转换为user_id
-func GinMinTokenToUserIDRedis(tx mmysql.DbExeAble, redisClient *redis.Client, getUserIDByToken func(ctx context.Context, tx mmysql.DbExeAble, redisClient *redis.Client, token string) (int64, error)) func(*gin.Context) {
+// MinTokenToUserIDRedis token转换为user_id
+func MinTokenToUserIDRedis(tx mmysql.DbExeAble, redisClient *redis.Client, getUserIDByToken func(ctx context.Context, tx mmysql.DbExeAble, redisClient *redis.Client, token string) (int64, error)) func(*gin.Context) {
 	return func(c *gin.Context) {
-		err := GinRepeatReadBody(c)
+		err := RepeatReadBody(c)
 		if err != nil {
-			GinDoRespInternalErr(c)
+			DoRespInternalErr(c)
 			c.Abort()
 			return
 		}
@@ -213,26 +204,26 @@ func GinMinTokenToUserIDRedis(tx mmysql.DbExeAble, redisClient *redis.Client, ge
 		err = c.ShouldBind(&req)
 		if err != nil {
 			mlog.Log.Errorf("err: [%T] %s", err, err.Error())
-			GinFillBindError(c, err)
+			FillBindError(c, err)
 			c.Abort()
 			return
 		}
-		bodyErr := GinRepeatReadBody(c)
+		bodyErr := RepeatReadBody(c)
 		if bodyErr != nil {
 			mlog.Log.Errorf("err: [%T] %s", bodyErr, bodyErr.Error())
-			GinDoRespInternalErr(c)
+			DoRespInternalErr(c)
 			c.Abort()
 			return
 		}
 		userID, err := getUserIDByToken(c, tx, redisClient, req.Token)
 		if err != nil {
 			mlog.Log.Errorf("err: [%T] %s", err, err.Error())
-			GinDoRespInternalErr(c)
+			DoRespInternalErr(c)
 			c.Abort()
 			return
 		}
 		if userID == 0 {
-			GinDoRespErr(c, ErrorToken, ErrorTokenMsg, nil)
+			DoRespErr(c, ErrorToken, ErrorTokenMsg, nil)
 			c.Abort()
 			return
 		}
@@ -241,12 +232,12 @@ func GinMinTokenToUserIDRedis(tx mmysql.DbExeAble, redisClient *redis.Client, ge
 	}
 }
 
-// GinMinTokenToUserIDRedisIgnore token转换为user_id
-func GinMinTokenToUserIDRedisIgnore(tx mmysql.DbExeAble, redisClient *redis.Client, getUserIDByToken func(ctx context.Context, tx mmysql.DbExeAble, redisClient *redis.Client, token string) (int64, error)) func(*gin.Context) {
+// MinTokenToUserIDRedisIgnore token转换为user_id
+func MinTokenToUserIDRedisIgnore(tx mmysql.DbExeAble, redisClient *redis.Client, getUserIDByToken func(ctx context.Context, tx mmysql.DbExeAble, redisClient *redis.Client, token string) (int64, error)) func(*gin.Context) {
 	return func(c *gin.Context) {
-		err := GinRepeatReadBody(c)
+		err := RepeatReadBody(c)
 		if err != nil {
-			GinDoRespInternalErr(c)
+			DoRespInternalErr(c)
 			c.Abort()
 			return
 		}
@@ -258,17 +249,17 @@ func GinMinTokenToUserIDRedisIgnore(tx mmysql.DbExeAble, redisClient *redis.Clie
 			c.Next()
 			return
 		}
-		bodyErr := GinRepeatReadBody(c)
+		bodyErr := RepeatReadBody(c)
 		if bodyErr != nil {
 			mlog.Log.Errorf("err: [%T] %s", bodyErr, bodyErr.Error())
-			GinDoRespInternalErr(c)
+			DoRespInternalErr(c)
 			c.Abort()
 			return
 		}
 		userID, err := getUserIDByToken(c, tx, redisClient, req.Token)
 		if err != nil {
 			mlog.Log.Errorf("err: [%T] %s", err, err.Error())
-			GinDoRespInternalErr(c)
+			DoRespInternalErr(c)
 			c.Abort()
 			return
 		}

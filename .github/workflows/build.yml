@@ -44,4 +44,4 @@ jobs:
         go install msnowflake/*.go && \
         go install mtencent/*.go && \
         go install mutils/*.go && \
-        go install mweixin/*.go
+        go install mwechat/*.go

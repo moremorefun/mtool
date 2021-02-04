@@ -1,4 +1,4 @@
-package mweixin
+package mwechat
 
 import (
 	"bytes"
@@ -47,8 +47,8 @@ func XMLWalk(bs []byte) (map[string]interface{}, error) {
 	return r, nil
 }
 
-// WechatGetSign 获取签名
-func WechatGetSign(appSecret string, paramsMap map[string]interface{}) string {
+// GetSign 获取签名
+func GetSign(appSecret string, paramsMap map[string]interface{}) string {
 	var args []string
 	var keys []string
 	for k := range paramsMap {
@@ -67,15 +67,15 @@ func WechatGetSign(appSecret string, paramsMap map[string]interface{}) string {
 	return strings.ToUpper(signedString)
 }
 
-// WechatCheckSign 检查签名
-func WechatCheckSign(appSecret string, paramsMap map[string]interface{}) bool {
+// CheckSign 检查签名
+func CheckSign(appSecret string, paramsMap map[string]interface{}) bool {
 	noSignMap := gin.H{}
 	for k, v := range paramsMap {
 		if k != "sign" {
 			noSignMap[k] = v
 		}
 	}
-	getSign := WechatGetSign(appSecret, noSignMap)
+	getSign := GetSign(appSecret, noSignMap)
 	if getSign != paramsMap["sign"] {
 		return false
 	}

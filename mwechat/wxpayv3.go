@@ -1,4 +1,4 @@
-package mweixin
+package mwechat
 
 import (
 	"bytes"
@@ -98,8 +98,8 @@ func RsaSign(signContent string, privateKey *rsa.PrivateKey, hash crypto.Hash) (
 	return base64.StdEncoding.EncodeToString(signature), nil
 }
 
-// WxPayV3SignStr 获取签名结果
-func WxPayV3SignStr(key *rsa.PrivateKey, cols []string) (string, error) {
+// PayV3SignStr 获取签名结果
+func PayV3SignStr(key *rsa.PrivateKey, cols []string) (string, error) {
 	var buf bytes.Buffer
 	for _, col := range cols {
 		buf.WriteString(col)
@@ -112,8 +112,8 @@ func WxPayV3SignStr(key *rsa.PrivateKey, cols []string) (string, error) {
 	return sign, nil
 }
 
-// WxPayV3Sign v3签名
-func WxPayV3Sign(mchid, keySerial string, key *rsa.PrivateKey, req *gorequest.SuperAgent) (*gorequest.SuperAgent, error) {
+// PayV3Sign v3签名
+func PayV3Sign(mchid, keySerial string, key *rsa.PrivateKey, req *gorequest.SuperAgent) (*gorequest.SuperAgent, error) {
 	timestamp := time.Now().Unix()
 	nonce := mutils.GetUUIDStr()
 
@@ -137,7 +137,7 @@ func WxPayV3Sign(mchid, keySerial string, key *rsa.PrivateKey, req *gorequest.Su
 			return nil, err
 		}
 	}
-	sign, err := WxPayV3SignStr(key, []string{
+	sign, err := PayV3SignStr(key, []string{
 		req.Method,
 		uri.Path,
 		strconv.FormatInt(timestamp, 10),
@@ -162,8 +162,8 @@ func WxPayV3Sign(mchid, keySerial string, key *rsa.PrivateKey, req *gorequest.Su
 	return req, nil
 }
 
-// WxPayV3Decrype 解密
-func WxPayV3Decrype(key string, cipherStr, nonce, associatedData string) (string, error) {
+// PayV3Decrype 解密
+func PayV3Decrype(key string, cipherStr, nonce, associatedData string) (string, error) {
 	keyBytes := []byte(key)
 	nonceBytes := []byte(nonce)
 	associatedDataBytes := []byte(associatedData)
@@ -187,20 +187,20 @@ func WxPayV3Decrype(key string, cipherStr, nonce, associatedData string) (string
 	return string(plaintext), nil
 }
 
-// WxPayV3CheckSign v3签名验证
-func WxPayV3CheckSign(header map[string][]string, body []byte, cerStr string) error {
+// PayV3CheckSign v3签名验证
+func PayV3CheckSign(header map[string][]string, body []byte, cerStr string) error {
 	if len(cerStr) == 0 {
 		return fmt.Errorf("no cer")
 	}
-	timestamp, err := WxPayV3GetHeaderByKey(header, "Wechatpay-Timestamp")
+	timestamp, err := PayV3GetHeaderByKey(header, "Wechatpay-Timestamp")
 	if err != nil {
 		return err
 	}
-	nonce, err := WxPayV3GetHeaderByKey(header, "Wechatpay-Nonce")
+	nonce, err := PayV3GetHeaderByKey(header, "Wechatpay-Nonce")
 	if err != nil {
 		return err
 	}
-	signature, err := WxPayV3GetHeaderByKey(header, "Wechatpay-Signature")
+	signature, err := PayV3GetHeaderByKey(header, "Wechatpay-Signature")
 	if err != nil {
 		return err
 	}
@@ -223,8 +223,8 @@ func WxPayV3CheckSign(header map[string][]string, body []byte, cerStr string) er
 	return err
 }
 
-// WxPayV3GetHeaderByKey 获取头
-func WxPayV3GetHeaderByKey(header map[string][]string, key string) (string, error) {
+// PayV3GetHeaderByKey 获取头
+func PayV3GetHeaderByKey(header map[string][]string, key string) (string, error) {
 	v, ok := header[key]
 	if !ok {
 		return "", fmt.Errorf("no key %s", key)
@@ -235,8 +235,8 @@ func WxPayV3GetHeaderByKey(header map[string][]string, key string) (string, erro
 	return v[0], nil
 }
 
-// WxPayV3GetPrepay 获取预支付信息
-func WxPayV3GetPrepay(keySerial string, key *rsa.PrivateKey, appID, mchID, openID, payBody, outTradeNo, cbURL string, totalFee int64) (gin.H, string, error) {
+// PayV3GetPrepay 获取预支付信息
+func PayV3GetPrepay(keySerial string, key *rsa.PrivateKey, appID, mchID, openID, payBody, outTradeNo, cbURL string, totalFee int64) (gin.H, string, error) {
 	req := gorequest.New().
 		Post("https://api.mch.weixin.qq.com/v3/pay/transactions/jsapi").
 		Send(
@@ -254,7 +254,7 @@ func WxPayV3GetPrepay(keySerial string, key *rsa.PrivateKey, appID, mchID, openI
 				},
 			},
 		)
-	req, err := WxPayV3Sign(
+	req, err := PayV3Sign(
 		mchID,
 		keySerial,
 		key,
@@ -274,19 +274,19 @@ func WxPayV3GetPrepay(keySerial string, key *rsa.PrivateKey, appID, mchID, openI
 	if len(prepayResp.PrepayID) == 0 {
 		return nil, "", fmt.Errorf("get prepay id err: %s", body)
 	}
-	v, err := WxPayV3SignPrepayid(key, appID, prepayResp.PrepayID)
+	v, err := PayV3SignPrepayid(key, appID, prepayResp.PrepayID)
 	if err != nil {
 		return nil, "", err
 	}
 	return v, prepayResp.PrepayID, nil
 }
 
-// WxPayV3SignPrepayid 签名prepayid
-func WxPayV3SignPrepayid(key *rsa.PrivateKey, appID, prepayid string) (gin.H, error) {
+// PayV3SignPrepayid 签名prepayid
+func PayV3SignPrepayid(key *rsa.PrivateKey, appID, prepayid string) (gin.H, error) {
 	objTimestamp := strconv.FormatInt(time.Now().Unix(), 10)
 	objNonce := mutils.GetUUIDStr()
 	objCol := fmt.Sprintf("prepay_id=%s", prepayid)
-	objSign, err := WxPayV3SignStr(
+	objSign, err := PayV3SignStr(
 		key,
 		[]string{
 			appID,
@@ -308,8 +308,8 @@ func WxPayV3SignPrepayid(key *rsa.PrivateKey, appID, prepayid string) (gin.H, er
 	return v, nil
 }
 
-// WxPayV3DecodePayResp 解析支付回调
-func WxPayV3DecodePayResp(v3Key string, body []byte, mchid, appid string) (*StWxPayResp, error) {
+// PayV3DecodePayResp 解析支付回调
+func PayV3DecodePayResp(v3Key string, body []byte, mchid, appid string) (*StWxPayResp, error) {
 	var rawResp StWxPayRawResp
 	err := jsoniter.Unmarshal(body, &rawResp)
 	if err != nil {
@@ -334,7 +334,7 @@ func WxPayV3DecodePayResp(v3Key string, body []byte, mchid, appid string) (*StWx
 	associatedData := rawResp.Resource.AssociatedData
 	nonce := rawResp.Resource.Nonce
 
-	plain, err := WxPayV3Decrype(
+	plain, err := PayV3Decrype(
 		v3Key,
 		ciphertext,
 		nonce,
@@ -360,8 +360,8 @@ func WxPayV3DecodePayResp(v3Key string, body []byte, mchid, appid string) (*StWx
 	return &finalResp, nil
 }
 
-// WxPayCheckRefundCb 验证回调
-func WxPayCheckRefundCb(mchKey string, body []byte) (*StWxRefundCb, error) {
+// PayCheckRefundCb 验证回调
+func PayCheckRefundCb(mchKey string, body []byte) (*StWxRefundCb, error) {
 	mchKeyMd5 := fmt.Sprintf("%x", md5.Sum([]byte(mchKey)))
 	bodyMap, err := XMLWalk(body)
 	if err != nil {

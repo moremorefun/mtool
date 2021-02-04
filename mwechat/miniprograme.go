@@ -1,4 +1,4 @@
-package mweixin
+package mwechat
 
 import (
 	"context"
@@ -155,7 +155,7 @@ func SQLRedisGetWxToken(c context.Context, tx mmysql.DbExeAble, redisClient *red
 	funcSQLSetToken func(context.Context, mmysql.DbExeAble, string, string, string, int64) error,
 ) (string, error) {
 	redisKey := fmt.Sprintf("wx_token_%s", appID)
-	token, err := mredis.RedisGet(
+	token, err := mredis.Get(
 		c,
 		redisClient,
 		redisKey,
@@ -215,7 +215,7 @@ func SQLRedisGetWxToken(c context.Context, tx mmysql.DbExeAble, redisClient *red
 	if err != nil {
 		return "", err
 	}
-	err = mredis.RedisSet(
+	err = mredis.Set(
 		c,
 		redisClient,
 		redisKey,
@@ -233,7 +233,7 @@ func SQLRedisRestWxToken(c context.Context, tx mmysql.DbExeAble, redisClient *re
 	funcSQLResetToken func(context.Context, mmysql.DbExeAble, string) error,
 ) {
 	redisKey := fmt.Sprintf("wx_token_%s", appID)
-	err := mredis.RedisRm(
+	err := mredis.Rm(
 		c,
 		redisClient,
 		redisKey,
