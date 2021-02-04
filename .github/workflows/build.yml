@@ -33,4 +33,10 @@ jobs:
 
     - name: Build
       run: |
-        go install
+        go install dbdiff/*.go && \
+        go install log/*.go && \
+        go install mysql/*.go && \
+        go install qiniu/*.go && \
+        go install query/*.go && \
+        go install snowflake/*.go && \
+        go install utils/*.go
