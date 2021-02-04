@@ -25,18 +25,6 @@ type Resp struct {
 	Data    gin.H  `json:"data,omitempty"`
 }
 
-// RespSuccess 成功返回
-var RespSuccess = Resp{
-	ErrCode: ErrorSuccess,
-	ErrMsg:  ErrorSuccessMsg,
-}
-
-// RespInternalErr 成功返回
-var RespInternalErr = Resp{
-	ErrCode: ErrorInternal,
-	ErrMsg:  ErrorInternalMsg,
-}
-
 // RepeatReadBody 创建可重复度body
 func RepeatReadBody(c *gin.Context) error {
 	var err error
