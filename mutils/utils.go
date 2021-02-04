@@ -1,4 +1,4 @@
-package utils
+package mutils
 
 // IsStringInSlice 字符串是否在数组中
 func IsStringInSlice(arr []string, str string) bool {

@@ -1,11 +1,11 @@
-package query
+package mquery
 
 import (
 	"bytes"
 	"context"
 	"fmt"
 
-	"github.com/moremorefun/mtool/mysql"
+	"github.com/moremorefun/mtool/mmysql"
 )
 
 type deleteData struct {
@@ -59,12 +59,12 @@ func (q *deleteData) ToSQL() (string, map[string]interface{}, error) {
 }
 
 // DoExecuteCount 获取执行行数
-func (q *deleteData) DoExecuteCount(ctx context.Context, tx mysql.DbExeAble) (int64, error) {
+func (q *deleteData) DoExecuteCount(ctx context.Context, tx mmysql.DbExeAble) (int64, error) {
 	query, arg, err := q.ToSQL()
 	if err != nil {
 		return 0, err
 	}
-	return mysql.DbExecuteCountNamedContent(
+	return mmysql.DbExecuteCountNamedContent(
 		ctx,
 		tx,
 		query,

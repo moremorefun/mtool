@@ -1,13 +1,13 @@
-package query
+package mquery
 
 import (
 	"context"
 	"fmt"
 	"strings"
 
-	"github.com/moremorefun/mtool/utils"
+	"github.com/moremorefun/mtool/mutils"
 
-	"github.com/moremorefun/mtool/mysql"
+	"github.com/moremorefun/mtool/mmysql"
 
 	jsoniter "github.com/json-iterator/go"
 )
@@ -31,7 +31,7 @@ func GetValuesFromRows(rows []map[string]interface{}, key string) ([]interface{}
 		if !ok {
 			return nil, fmt.Errorf("no key: %s", key)
 		}
-		if !utils.IsInSlice(values, v) {
+		if !mutils.IsInSlice(values, v) {
 			values = append(values, v)
 		}
 	}
@@ -47,7 +47,7 @@ func GetValuesFromMap(m map[string]map[string]interface{}, key string) ([]interf
 		if !ok {
 			return nil, fmt.Errorf("no key: %s", key)
 		}
-		if !utils.IsInSlice(values, v) {
+		if !mutils.IsInSlice(values, v) {
 			values = append(values, v)
 		}
 	}
@@ -64,7 +64,7 @@ func GetValuesFromMapRows(ms map[string][]map[string]interface{}, key string) ([
 			if !ok {
 				return nil, fmt.Errorf("no key: %s", key)
 			}
-			if !utils.IsInSlice(values, v) {
+			if !mutils.IsInSlice(values, v) {
 				values = append(values, v)
 			}
 		}
@@ -73,7 +73,7 @@ func GetValuesFromMapRows(ms map[string][]map[string]interface{}, key string) ([
 }
 
 // SelectRows2One 获取关联map
-func SelectRows2One(ctx context.Context, tx mysql.DbExeAble, sourceRows []map[string]interface{}, sourceKey, targetTableName, targetKey string, targetColumns []string) (map[string]map[string]interface{}, []interface{}, error) {
+func SelectRows2One(ctx context.Context, tx mmysql.DbExeAble, sourceRows []map[string]interface{}, sourceKey, targetTableName, targetKey string, targetColumns []string) (map[string]map[string]interface{}, []interface{}, error) {
 	keyValues, err := GetValuesFromRows(sourceRows, sourceKey)
 	if err != nil {
 		return nil, nil, err
@@ -83,7 +83,7 @@ func SelectRows2One(ctx context.Context, tx mysql.DbExeAble, sourceRows []map[st
 }
 
 // SelectRows2Many 获取关联map
-func SelectRows2Many(ctx context.Context, tx mysql.DbExeAble, sourceRows []map[string]interface{}, sourceKey, targetTableName, targetKey string, targetColumns []string) (map[string][]map[string]interface{}, []interface{}, error) {
+func SelectRows2Many(ctx context.Context, tx mmysql.DbExeAble, sourceRows []map[string]interface{}, sourceKey, targetTableName, targetKey string, targetColumns []string) (map[string][]map[string]interface{}, []interface{}, error) {
 	keyValues, err := GetValuesFromRows(sourceRows, sourceKey)
 	if err != nil {
 		return nil, nil, err
@@ -93,12 +93,12 @@ func SelectRows2Many(ctx context.Context, tx mysql.DbExeAble, sourceRows []map[s
 }
 
 // SelectKeys2One 获取关联map
-func SelectKeys2One(ctx context.Context, tx mysql.DbExeAble, keyValues []interface{}, targetTableName, targetKey string, targetColumns []string) (map[string]map[string]interface{}, error) {
+func SelectKeys2One(ctx context.Context, tx mmysql.DbExeAble, keyValues []interface{}, targetTableName, targetKey string, targetColumns []string) (map[string]map[string]interface{}, error) {
 	if len(keyValues) == 0 {
 		return nil, nil
 	}
 	if len(targetColumns) != 0 {
-		if !utils.IsStringInSlice(targetColumns, targetKey) {
+		if !mutils.IsStringInSlice(targetColumns, targetKey) {
 			targetColumns = append(targetColumns, targetKey)
 		}
 	}
@@ -127,12 +127,12 @@ func SelectKeys2One(ctx context.Context, tx mysql.DbExeAble, keyValues []interfa
 }
 
 // SelectKeys2Many 获取关联map
-func SelectKeys2Many(ctx context.Context, tx mysql.DbExeAble, keyValues []interface{}, targetTableName, targetKey string, targetColumns []string) (map[string][]map[string]interface{}, error) {
+func SelectKeys2Many(ctx context.Context, tx mmysql.DbExeAble, keyValues []interface{}, targetTableName, targetKey string, targetColumns []string) (map[string][]map[string]interface{}, error) {
 	if len(keyValues) == 0 {
 		return nil, nil
 	}
 	if len(targetColumns) != 0 {
-		if !utils.IsStringInSlice(targetColumns, targetKey) {
+		if !mutils.IsStringInSlice(targetColumns, targetKey) {
 			targetColumns = append(targetColumns, targetKey)
 		}
 	}

@@ -1,4 +1,4 @@
-package mysql
+package mmysql
 
 import (
 	"context"
@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/moremorefun/mtool/log"
+	"github.com/moremorefun/mtool/mlog"
 
 	"github.com/jmoiron/sqlx"
 )
@@ -84,9 +84,9 @@ func DbCreate(dataSourceName string, showSQL bool) *sqlx.DB {
 	var err error
 	var db *sqlx.DB
 
-	db, err = sqlx.Connect("mysql", dataSourceName)
+	db, err = sqlx.Connect("mmysql", dataSourceName)
 	if err != nil {
-		log.Log.Fatalf("db connect error: %s", err.Error())
+		mlog.Log.Fatalf("db connect error: %s", err.Error())
 		return nil
 	}
 
@@ -97,7 +97,7 @@ func DbCreate(dataSourceName string, showSQL bool) *sqlx.DB {
 
 	err = db.Ping()
 	if err != nil {
-		log.Log.Fatalf("db ping error: %s", err.Error())
+		mlog.Log.Fatalf("db ping error: %s", err.Error())
 		return nil
 	}
 	return db
@@ -330,6 +330,6 @@ func sqlLog(query string, args []interface{}) {
 				queryStr = strings.Replace(queryStr, "?", fmt.Sprintf(`%v`, arg), 1)
 			}
 		}
-		log.Log.Debugf("exec sql:\n%s;\n%#v", query, args)
+		mlog.Log.Debugf("exec sql:\n%s;\n%#v", query, args)
 	}
 }

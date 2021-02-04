@@ -1,4 +1,4 @@
-package qiniu
+package mqiniu
 
 import (
 	"bytes"

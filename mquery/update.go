@@ -1,11 +1,11 @@
-package query
+package mquery
 
 import (
 	"bytes"
 	"context"
 	"fmt"
 
-	"github.com/moremorefun/mtool/mysql"
+	"github.com/moremorefun/mtool/mmysql"
 )
 
 type updateData struct {
@@ -81,12 +81,12 @@ func (q *updateData) ToSQL() (string, map[string]interface{}, error) {
 }
 
 // DoExecuteCount 获取执行行数
-func (q *updateData) DoExecuteCount(ctx context.Context, tx mysql.DbExeAble) (int64, error) {
+func (q *updateData) DoExecuteCount(ctx context.Context, tx mmysql.DbExeAble) (int64, error) {
 	query, arg, err := q.ToSQL()
 	if err != nil {
 		return 0, err
 	}
-	return mysql.DbExecuteCountNamedContent(
+	return mmysql.DbExecuteCountNamedContent(
 		ctx,
 		tx,
 		query,

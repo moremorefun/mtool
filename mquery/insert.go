@@ -1,11 +1,11 @@
-package query
+package mquery
 
 import (
 	"bytes"
 	"context"
 	"fmt"
 
-	"github.com/moremorefun/mtool/mysql"
+	"github.com/moremorefun/mtool/mmysql"
 )
 
 type insertData struct {
@@ -112,12 +112,12 @@ func (q *insertData) ToSQL() (string, map[string]interface{}, error) {
 }
 
 // DoExecuteLastID 获取最后一个插入id
-func (q *insertData) DoExecuteLastID(ctx context.Context, tx mysql.DbExeAble) (int64, error) {
+func (q *insertData) DoExecuteLastID(ctx context.Context, tx mmysql.DbExeAble) (int64, error) {
 	query, arg, err := q.ToSQL()
 	if err != nil {
 		return 0, err
 	}
-	return mysql.DbExecuteLastIDNamedContent(
+	return mmysql.DbExecuteLastIDNamedContent(
 		ctx,
 		tx,
 		query,
@@ -126,12 +126,12 @@ func (q *insertData) DoExecuteLastID(ctx context.Context, tx mysql.DbExeAble) (i
 }
 
 // DoExecuteCount 获取执行行数
-func (q *insertData) DoExecuteCount(ctx context.Context, tx mysql.DbExeAble) (int64, error) {
+func (q *insertData) DoExecuteCount(ctx context.Context, tx mmysql.DbExeAble) (int64, error) {
 	query, arg, err := q.ToSQL()
 	if err != nil {
 		return 0, err
 	}
-	return mysql.DbExecuteCountNamedContent(
+	return mmysql.DbExecuteCountNamedContent(
 		ctx,
 		tx,
 		query,

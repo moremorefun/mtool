@@ -1,4 +1,4 @@
-package query
+package mquery
 
 import (
 	"bytes"
@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/moremorefun/mtool/mysql"
+	"github.com/moremorefun/mtool/mmysql"
 )
 
 type selectData struct {
@@ -239,7 +239,7 @@ func (q *selectData) ToSQL() (string, map[string]interface{}, error) {
 }
 
 // DoGet 获取数据
-func (q *selectData) DoGet(ctx context.Context, tx mysql.DbExeAble, dest interface{}) (bool, error) {
+func (q *selectData) DoGet(ctx context.Context, tx mmysql.DbExeAble, dest interface{}) (bool, error) {
 	query, arg, err := q.Limit(1).ToSQL()
 	if err == ErrInValueLenZero {
 		return false, nil
@@ -247,7 +247,7 @@ func (q *selectData) DoGet(ctx context.Context, tx mysql.DbExeAble, dest interfa
 	if err != nil {
 		return false, err
 	}
-	return mysql.DbGetNamedContent(
+	return mmysql.DbGetNamedContent(
 		ctx,
 		tx,
 		dest,
@@ -257,7 +257,7 @@ func (q *selectData) DoGet(ctx context.Context, tx mysql.DbExeAble, dest interfa
 }
 
 // DoSelect 获取数据
-func (q *selectData) DoSelect(ctx context.Context, tx mysql.DbExeAble, dest interface{}) error {
+func (q *selectData) DoSelect(ctx context.Context, tx mmysql.DbExeAble, dest interface{}) error {
 	query, arg, err := q.ToSQL()
 	if err == ErrInValueLenZero {
 		return nil
@@ -265,7 +265,7 @@ func (q *selectData) DoSelect(ctx context.Context, tx mysql.DbExeAble, dest inte
 	if err != nil {
 		return err
 	}
-	return mysql.DbSelectNamedContent(
+	return mmysql.DbSelectNamedContent(
 		ctx,
 		tx,
 		dest,
@@ -275,7 +275,7 @@ func (q *selectData) DoSelect(ctx context.Context, tx mysql.DbExeAble, dest inte
 }
 
 // RowInterface 获取数据
-func (q *selectData) Row(ctx context.Context, tx mysql.DbExeAble) (map[string]interface{}, error) {
+func (q *selectData) Row(ctx context.Context, tx mmysql.DbExeAble) (map[string]interface{}, error) {
 	rows, err := q.Limit(1).Rows(
 		ctx,
 		tx,
@@ -293,7 +293,7 @@ func (q *selectData) Row(ctx context.Context, tx mysql.DbExeAble) (map[string]in
 }
 
 // RowsInterface 获取数据
-func (q *selectData) Rows(ctx context.Context, tx mysql.DbExeAble) ([]map[string]interface{}, error) {
+func (q *selectData) Rows(ctx context.Context, tx mmysql.DbExeAble) ([]map[string]interface{}, error) {
 	query, arg, err := q.ToSQL()
 	if err == ErrInValueLenZero {
 		return nil, nil
@@ -301,5 +301,5 @@ func (q *selectData) Rows(ctx context.Context, tx mysql.DbExeAble) ([]map[string
 	if err != nil {
 		return nil, err
 	}
-	return mysql.DbRowsNamedContent(ctx, tx, query, arg)
+	return mmysql.DbRowsNamedContent(ctx, tx, query, arg)
 }
