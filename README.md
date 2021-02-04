@@ -18,14 +18,19 @@
 
 开发过程中用到的一些通用的golang函数
 
-- dbdiff 数据库结构对比
-- log 日志
-- mysql mysql操作
-- qiniu 七牛操作
-- query sql语句生成
-- snowflake 雪花id生成
-- utils 通用函数
-
+- mdbdiff 数据库结构对比
+- mencrypt 加解密
+- mgin gin相关
+- mkuaidi100 快递100
+- mlog 日志
+- mmysql mysql操作
+- mqiniu 七牛操作
+- mquery sql语句生成
+- mredis redis相关
+- msnowflake 雪花id生成
+- mtencent 腾讯相关
+- mutils 通用函数
+- mwechat 微信相关
 
 ## 使用说明
 
