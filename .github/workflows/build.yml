@@ -40,5 +40,8 @@ jobs:
         go install mmysql/*.go && \
         go install mqiniu/*.go && \
         go install mquery/*.go && \
+        go install mredis/*.go && \
         go install msnowflake/*.go && \
-        go install mutils/*.go
+        go install mtencent/*.go && \
+        go install mutils/*.go && \
+        go install mweixin/*.go

@@ -13,8 +13,10 @@ require (
 	github.com/onsi/gomega v1.10.5 // indirect
 	github.com/parnurzeal/gorequest v0.2.16
 	github.com/qiniu/go-sdk/v7 v7.9.0
+	github.com/satori/go.uuid v1.2.0
 	github.com/schemalex/schemalex v0.1.1
 	github.com/smartystreets/goconvey v1.6.4 // indirect
+	github.com/tencentcloud/tencentcloud-sdk-go v1.0.102
 	go.uber.org/zap v1.16.0
 	moul.io/http2curl v1.0.0 // indirect
 )
