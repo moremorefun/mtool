@@ -1,4 +1,4 @@
-package mmysql
+package mdb
 
 import (
 	"context"
@@ -16,15 +16,15 @@ import (
 
 // 数据库数据类型
 const (
-	DbSQLGoTypeString  = 1
-	DbSQLGoTypeInt64   = 2
-	DbSQLGoTypeBytes   = 3
-	DbSQLGoTypeFloat64 = 4
-	DbSQLGoTypeTime    = 5
+	GoTypeString  = 1
+	GoTypeInt64   = 2
+	GoTypeBytes   = 3
+	GoTypeFloat64 = 4
+	GoTypeTime    = 5
 )
 
-// DbSQLTypeToGoMap 类型转换关系
-var DbSQLTypeToGoMap = map[string]int64{
+// TypeMySQLToGoMap 类型转换关系
+var TypeMySQLToGoMap = map[string]int64{
 	"BIT":        1,
 	"TEXT":       1,
 	"BLOB":       3,
@@ -57,34 +57,33 @@ var DbSQLTypeToGoMap = map[string]int64{
 	"YEAR":       2,
 }
 
-// DbExeAble 数据库接口
-type DbExeAble interface {
+// ExecuteAble 数据库接口
+type ExecuteAble interface {
 	Rebind(string) string
+
 	Get(dest interface{}, query string, args ...interface{}) error
 	Exec(query string, args ...interface{}) (sql.Result, error)
 	Select(dest interface{}, query string, args ...interface{}) error
+
 	GetContext(ctx context.Context, dest interface{}, query string, args ...interface{}) error
 	ExecContext(ctx context.Context, query string, args ...interface{}) (sql.Result, error)
 	SelectContext(ctx context.Context, dest interface{}, query string, args ...interface{}) error
 
 	QueryContext(ctx context.Context, query string, args ...interface{}) (*sql.Rows, error)
 	QueryRowContext(ctx context.Context, query string, args ...interface{}) *sql.Row
-
-	QueryxContext(ctx context.Context, query string, args ...interface{}) (*sqlx.Rows, error)
-	QueryRowxContext(ctx context.Context, query string, args ...interface{}) *sqlx.Row
 }
 
 // isShowSQL 是否显示执行的sql语句
 var isShowSQL bool
 
-// DbCreate 创建数据库链接
-func DbCreate(dataSourceName string, showSQL bool) *sqlx.DB {
+// Create 创建数据库链接
+func Create(dataSourceName string, showSQL bool) *sqlx.DB {
 	isShowSQL = showSQL
 
 	var err error
 	var db *sqlx.DB
 
-	db, err = sqlx.Connect("mmysql", dataSourceName)
+	db, err = sqlx.Connect("mdb", dataSourceName)
 	if err != nil {
 		mlog.Log.Fatalf("db connect error: %s", err.Error())
 		return nil
@@ -103,13 +102,13 @@ func DbCreate(dataSourceName string, showSQL bool) *sqlx.DB {
 	return db
 }
 
-// DbSetShowSQL 设置是否显示sql
-func DbSetShowSQL(b bool) {
+// SetShowSQL 设置是否显示sql
+func SetShowSQL(b bool) {
 	isShowSQL = b
 }
 
-// DbExecuteLastIDNamedContent 执行sql语句并返回lastID
-func DbExecuteLastIDNamedContent(ctx context.Context, tx DbExeAble, query string, argMap map[string]interface{}) (int64, error) {
+// ExecuteLastIDContent 执行sql语句并返回lastID
+func ExecuteLastIDContent(ctx context.Context, tx ExecuteAble, query string, argMap map[string]interface{}) (int64, error) {
 	query, args, err := sqlx.Named(query, argMap)
 	if err != nil {
 		return 0, err
@@ -135,8 +134,8 @@ func DbExecuteLastIDNamedContent(ctx context.Context, tx DbExeAble, query string
 	return lastID, nil
 }
 
-// DbExecuteCountNamedContent 执行sql语句返回执行个数
-func DbExecuteCountNamedContent(ctx context.Context, tx DbExeAble, query string, argMap map[string]interface{}) (int64, error) {
+// ExecuteCountContent 执行sql语句返回执行个数
+func ExecuteCountContent(ctx context.Context, tx ExecuteAble, query string, argMap map[string]interface{}) (int64, error) {
 	query, args, err := sqlx.Named(query, argMap)
 	if err != nil {
 		return 0, err
@@ -162,8 +161,8 @@ func DbExecuteCountNamedContent(ctx context.Context, tx DbExeAble, query string,
 	return count, nil
 }
 
-// DbGetNamedContent 执行sql查询并返回当个元素
-func DbGetNamedContent(ctx context.Context, tx DbExeAble, dest interface{}, query string, argMap map[string]interface{}) (bool, error) {
+// GetContent 执行sql查询并返回当个元素
+func GetContent(ctx context.Context, tx ExecuteAble, dest interface{}, query string, argMap map[string]interface{}) (bool, error) {
 	query, args, err := sqlx.Named(query, argMap)
 	if err != nil {
 		return false, err
@@ -191,8 +190,8 @@ func DbGetNamedContent(ctx context.Context, tx DbExeAble, dest interface{}, quer
 	return true, nil
 }
 
-// DbSelectNamedContent 执行sql查询并返回多行
-func DbSelectNamedContent(ctx context.Context, tx DbExeAble, dest interface{}, query string, argMap map[string]interface{}) error {
+// SelectContent 执行sql查询并返回多行
+func SelectContent(ctx context.Context, tx ExecuteAble, dest interface{}, query string, argMap map[string]interface{}) error {
 	query, args, err := sqlx.Named(query, argMap)
 	if err != nil {
 		return err
@@ -220,8 +219,8 @@ func DbSelectNamedContent(ctx context.Context, tx DbExeAble, dest interface{}, q
 	return nil
 }
 
-// DbRowsNamedContent 执行sql查询并返回多行
-func DbRowsNamedContent(ctx context.Context, tx DbExeAble, query string, argMap map[string]interface{}) ([]map[string]interface{}, error) {
+// RowsContent 执行sql查询并返回多行
+func RowsContent(ctx context.Context, tx ExecuteAble, query string, argMap map[string]interface{}) ([]map[string]interface{}, error) {
 	query, args, err := sqlx.Named(query, argMap)
 	if err != nil {
 		return nil, err
@@ -256,21 +255,21 @@ func DbRowsNamedContent(ctx context.Context, tx DbExeAble, query string, argMap 
 	columnsPoint := make([]interface{}, l)
 	for i, ct := range cts {
 		dbType := ct.DatabaseTypeName()
-		goType, ok := DbSQLTypeToGoMap[dbType]
+		goType, ok := TypeMySQLToGoMap[dbType]
 		if !ok {
 			return nil, fmt.Errorf("no db type: %s", dbType)
 		}
 		var tv reflect.Value
 		switch goType {
-		case DbSQLGoTypeString:
+		case GoTypeString:
 			tv = reflect.New(reflect.TypeOf(""))
-		case DbSQLGoTypeInt64:
+		case GoTypeInt64:
 			tv = reflect.New(reflect.TypeOf(int64(0)))
-		case DbSQLGoTypeBytes:
+		case GoTypeBytes:
 			tv = reflect.New(reflect.TypeOf([]byte{}))
-		case DbSQLGoTypeFloat64:
+		case GoTypeFloat64:
 			tv = reflect.New(reflect.TypeOf(float64(0)))
-		case DbSQLGoTypeTime:
+		case GoTypeTime:
 			tv = reflect.New(reflect.TypeOf(time.Time{}))
 		default:
 			return nil, fmt.Errorf("no go type: %d", goType)
@@ -295,8 +294,8 @@ func DbRowsNamedContent(ctx context.Context, tx DbExeAble, query string, argMap 
 	return mapRows, nil
 }
 
-// DbTransaction 执行事物
-func DbTransaction(ctx context.Context, db *sqlx.DB, f func(dbTx DbExeAble) error) error {
+// Transaction 执行事物
+func Transaction(ctx context.Context, db *sqlx.DB, f func(dbTx ExecuteAble) error) error {
 	isComment := false
 	tx, err := db.BeginTxx(ctx, nil)
 	if err != nil {

@@ -5,7 +5,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/moremorefun/mtool/mmysql"
+	"github.com/moremorefun/mtool/mdb"
 )
 
 type insertData struct {
@@ -112,12 +112,12 @@ func (q *insertData) ToSQL() (string, map[string]interface{}, error) {
 }
 
 // DoExecuteLastID 获取最后一个插入id
-func (q *insertData) DoExecuteLastID(ctx context.Context, tx mmysql.DbExeAble) (int64, error) {
+func (q *insertData) DoExecuteLastID(ctx context.Context, tx mdb.ExecuteAble) (int64, error) {
 	query, arg, err := q.ToSQL()
 	if err != nil {
 		return 0, err
 	}
-	return mmysql.DbExecuteLastIDNamedContent(
+	return mdb.ExecuteLastIDContent(
 		ctx,
 		tx,
 		query,
@@ -126,12 +126,12 @@ func (q *insertData) DoExecuteLastID(ctx context.Context, tx mmysql.DbExeAble) (
 }
 
 // DoExecuteCount 获取执行行数
-func (q *insertData) DoExecuteCount(ctx context.Context, tx mmysql.DbExeAble) (int64, error) {
+func (q *insertData) DoExecuteCount(ctx context.Context, tx mdb.ExecuteAble) (int64, error) {
 	query, arg, err := q.ToSQL()
 	if err != nil {
 		return 0, err
 	}
-	return mmysql.DbExecuteCountNamedContent(
+	return mdb.ExecuteCountContent(
 		ctx,
 		tx,
 		query,

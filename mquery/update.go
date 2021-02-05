@@ -5,7 +5,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/moremorefun/mtool/mmysql"
+	"github.com/moremorefun/mtool/mdb"
 )
 
 type updateData struct {
@@ -81,12 +81,12 @@ func (q *updateData) ToSQL() (string, map[string]interface{}, error) {
 }
 
 // DoExecuteCount 获取执行行数
-func (q *updateData) DoExecuteCount(ctx context.Context, tx mmysql.DbExeAble) (int64, error) {
+func (q *updateData) DoExecuteCount(ctx context.Context, tx mdb.ExecuteAble) (int64, error) {
 	query, arg, err := q.ToSQL()
 	if err != nil {
 		return 0, err
 	}
-	return mmysql.DbExecuteCountNamedContent(
+	return mdb.ExecuteCountContent(
 		ctx,
 		tx,
 		query,

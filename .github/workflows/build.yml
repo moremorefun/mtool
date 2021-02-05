@@ -33,11 +33,11 @@ jobs:
 
     - name: Build
       run: |
+        go install mdb/*.go && \
         go install mdbdiff/*.go && \
         go install mencrypt/*.go && \
         go install mgin/*.go && \
         go install mlog/*.go && \
-        go install mmysql/*.go && \
         go install mqiniu/*.go && \
         go install mquery/*.go && \
         go install mredis/*.go && \

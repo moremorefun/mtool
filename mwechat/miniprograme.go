@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/moremorefun/mtool/mdb"
 	"github.com/moremorefun/mtool/mlog"
-	"github.com/moremorefun/mtool/mmysql"
 	"github.com/moremorefun/mtool/mredis"
 
 	"github.com/gin-gonic/gin"
@@ -150,9 +150,9 @@ GotoHttpRetry:
 }
 
 // SQLRedisGetWxToken 获取小程序token
-func SQLRedisGetWxToken(c context.Context, tx mmysql.DbExeAble, redisClient *redis.Client, appID string,
-	funcSQLGetToken func(context.Context, mmysql.DbExeAble, string) (string, string, int64, error),
-	funcSQLSetToken func(context.Context, mmysql.DbExeAble, string, string, string, int64) error,
+func SQLRedisGetWxToken(c context.Context, tx mdb.ExecuteAble, redisClient *redis.Client, appID string,
+	funcSQLGetToken func(context.Context, mdb.ExecuteAble, string) (string, string, int64, error),
+	funcSQLSetToken func(context.Context, mdb.ExecuteAble, string, string, string, int64) error,
 ) (string, error) {
 	redisKey := fmt.Sprintf("wx_token_%s", appID)
 	token, err := mredis.Get(
@@ -229,8 +229,8 @@ func SQLRedisGetWxToken(c context.Context, tx mmysql.DbExeAble, redisClient *red
 }
 
 // SQLRedisRestWxToken 重置小程序token
-func SQLRedisRestWxToken(c context.Context, tx mmysql.DbExeAble, redisClient *redis.Client, appID string,
-	funcSQLResetToken func(context.Context, mmysql.DbExeAble, string) error,
+func SQLRedisRestWxToken(c context.Context, tx mdb.ExecuteAble, redisClient *redis.Client, appID string,
+	funcSQLResetToken func(context.Context, mdb.ExecuteAble, string) error,
 ) {
 	redisKey := fmt.Sprintf("wx_token_%s", appID)
 	err := mredis.Rm(

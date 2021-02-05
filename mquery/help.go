@@ -7,7 +7,7 @@ import (
 
 	"github.com/moremorefun/mtool/mutils"
 
-	"github.com/moremorefun/mtool/mmysql"
+	"github.com/moremorefun/mtool/mdb"
 
 	jsoniter "github.com/json-iterator/go"
 )
@@ -73,7 +73,7 @@ func GetValuesFromMapRows(ms map[string][]map[string]interface{}, key string) ([
 }
 
 // SelectRows2One 获取关联map
-func SelectRows2One(ctx context.Context, tx mmysql.DbExeAble, sourceRows []map[string]interface{}, sourceKey, targetTableName, targetKey string, targetColumns []string) (map[string]map[string]interface{}, []interface{}, error) {
+func SelectRows2One(ctx context.Context, tx mdb.ExecuteAble, sourceRows []map[string]interface{}, sourceKey, targetTableName, targetKey string, targetColumns []string) (map[string]map[string]interface{}, []interface{}, error) {
 	keyValues, err := GetValuesFromRows(sourceRows, sourceKey)
 	if err != nil {
 		return nil, nil, err
@@ -83,7 +83,7 @@ func SelectRows2One(ctx context.Context, tx mmysql.DbExeAble, sourceRows []map[s
 }
 
 // SelectRows2Many 获取关联map
-func SelectRows2Many(ctx context.Context, tx mmysql.DbExeAble, sourceRows []map[string]interface{}, sourceKey, targetTableName, targetKey string, targetColumns []string) (map[string][]map[string]interface{}, []interface{}, error) {
+func SelectRows2Many(ctx context.Context, tx mdb.ExecuteAble, sourceRows []map[string]interface{}, sourceKey, targetTableName, targetKey string, targetColumns []string) (map[string][]map[string]interface{}, []interface{}, error) {
 	keyValues, err := GetValuesFromRows(sourceRows, sourceKey)
 	if err != nil {
 		return nil, nil, err
@@ -93,7 +93,7 @@ func SelectRows2Many(ctx context.Context, tx mmysql.DbExeAble, sourceRows []map[
 }
 
 // SelectKeys2One 获取关联map
-func SelectKeys2One(ctx context.Context, tx mmysql.DbExeAble, keyValues []interface{}, targetTableName, targetKey string, targetColumns []string) (map[string]map[string]interface{}, error) {
+func SelectKeys2One(ctx context.Context, tx mdb.ExecuteAble, keyValues []interface{}, targetTableName, targetKey string, targetColumns []string) (map[string]map[string]interface{}, error) {
 	if len(keyValues) == 0 {
 		return nil, nil
 	}
@@ -127,7 +127,7 @@ func SelectKeys2One(ctx context.Context, tx mmysql.DbExeAble, keyValues []interf
 }
 
 // SelectKeys2Many 获取关联map
-func SelectKeys2Many(ctx context.Context, tx mmysql.DbExeAble, keyValues []interface{}, targetTableName, targetKey string, targetColumns []string) (map[string][]map[string]interface{}, error) {
+func SelectKeys2Many(ctx context.Context, tx mdb.ExecuteAble, keyValues []interface{}, targetTableName, targetKey string, targetColumns []string) (map[string][]map[string]interface{}, error) {
 	if len(keyValues) == 0 {
 		return nil, nil
 	}

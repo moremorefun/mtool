@@ -7,21 +7,21 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/moremorefun/mtool/mmysql"
+	"github.com/moremorefun/mtool/mdb"
 
 	"github.com/gin-gonic/gin"
 	"github.com/schemalex/schemalex/diff"
 )
 
-// GetDiff 获取数据库更新指令
-func GetDiff(tx mmysql.DbExeAble, tableNames []string, sqlFilePath string) (string, error) {
+// GetDiffSQL 获取数据库更新指令
+func GetDiffSQL(tx mdb.ExecuteAble, tableNames []string, sqlFilePath string) (string, error) {
 	var dbSQLs []string
 	for _, tableName := range tableNames {
 		var row struct {
 			TableName string `db:"Table"`
 			TableSQL  string `db:"Create Table"`
 		}
-		ok, err := mmysql.DbGetNamedContent(
+		ok, err := mdb.GetContent(
 			context.Background(),
 			tx,
 			&row,

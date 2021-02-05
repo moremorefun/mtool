@@ -7,7 +7,7 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	"github.com/moremorefun/mtool/mmysql"
+	"github.com/moremorefun/mtool/mdb"
 
 	"github.com/go-redis/redis"
 	"github.com/moremorefun/mtool/mencrypt"
@@ -135,7 +135,7 @@ func MidRepeatReadBody(c *gin.Context) {
 }
 
 // MinTokenToUserID token转换为user_id
-func MinTokenToUserID(tx mmysql.DbExeAble, getUserIDByToken func(ctx context.Context, tx mmysql.DbExeAble, token string) (int64, error)) func(*gin.Context) {
+func MinTokenToUserID(tx mdb.ExecuteAble, getUserIDByToken func(ctx context.Context, tx mdb.ExecuteAble, token string) (int64, error)) func(*gin.Context) {
 	return func(c *gin.Context) {
 		err := RepeatReadBody(c)
 		if err != nil {
@@ -178,7 +178,7 @@ func MinTokenToUserID(tx mmysql.DbExeAble, getUserIDByToken func(ctx context.Con
 }
 
 // MinTokenToUserIDRedis token转换为user_id
-func MinTokenToUserIDRedis(tx mmysql.DbExeAble, redisClient *redis.Client, getUserIDByToken func(ctx context.Context, tx mmysql.DbExeAble, redisClient *redis.Client, token string) (int64, error)) func(*gin.Context) {
+func MinTokenToUserIDRedis(tx mdb.ExecuteAble, redisClient *redis.Client, getUserIDByToken func(ctx context.Context, tx mdb.ExecuteAble, redisClient *redis.Client, token string) (int64, error)) func(*gin.Context) {
 	return func(c *gin.Context) {
 		err := RepeatReadBody(c)
 		if err != nil {
@@ -221,7 +221,7 @@ func MinTokenToUserIDRedis(tx mmysql.DbExeAble, redisClient *redis.Client, getUs
 }
 
 // MinTokenToUserIDRedisIgnore token转换为user_id
-func MinTokenToUserIDRedisIgnore(tx mmysql.DbExeAble, redisClient *redis.Client, getUserIDByToken func(ctx context.Context, tx mmysql.DbExeAble, redisClient *redis.Client, token string) (int64, error)) func(*gin.Context) {
+func MinTokenToUserIDRedisIgnore(tx mdb.ExecuteAble, redisClient *redis.Client, getUserIDByToken func(ctx context.Context, tx mdb.ExecuteAble, redisClient *redis.Client, token string) (int64, error)) func(*gin.Context) {
 	return func(c *gin.Context) {
 		err := RepeatReadBody(c)
 		if err != nil {
