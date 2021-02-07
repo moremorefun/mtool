@@ -109,16 +109,10 @@ func SetShowSQL(b bool) {
 
 // ExecuteLastIDContent 执行sql语句并返回lastID
 func ExecuteLastIDContent(ctx context.Context, tx ExecuteAble, query string, argMap map[string]interface{}) (int64, error) {
-	query, args, err := sqlx.Named(query, argMap)
+	query, args, err := wrapSQL(query, argMap, tx)
 	if err != nil {
 		return 0, err
 	}
-	query, args, err = sqlx.In(query, args...)
-	if err != nil {
-		return 0, err
-	}
-	query = tx.Rebind(query)
-	sqlLog(query, args)
 	ret, err := tx.ExecContext(
 		ctx,
 		query,
@@ -136,16 +130,10 @@ func ExecuteLastIDContent(ctx context.Context, tx ExecuteAble, query string, arg
 
 // ExecuteCountContent 执行sql语句返回执行个数
 func ExecuteCountContent(ctx context.Context, tx ExecuteAble, query string, argMap map[string]interface{}) (int64, error) {
-	query, args, err := sqlx.Named(query, argMap)
+	query, args, err := wrapSQL(query, argMap, tx)
 	if err != nil {
 		return 0, err
 	}
-	query, args, err = sqlx.In(query, args...)
-	if err != nil {
-		return 0, err
-	}
-	query = tx.Rebind(query)
-	sqlLog(query, args)
 	ret, err := tx.ExecContext(
 		ctx,
 		query,
@@ -163,16 +151,10 @@ func ExecuteCountContent(ctx context.Context, tx ExecuteAble, query string, argM
 
 // GetContent 执行sql查询并返回当个元素
 func GetContent(ctx context.Context, tx ExecuteAble, dest interface{}, query string, argMap map[string]interface{}) (bool, error) {
-	query, args, err := sqlx.Named(query, argMap)
+	query, args, err := wrapSQL(query, argMap, tx)
 	if err != nil {
 		return false, err
 	}
-	query, args, err = sqlx.In(query, args...)
-	if err != nil {
-		return false, err
-	}
-	query = tx.Rebind(query)
-	sqlLog(query, args)
 	err = tx.GetContext(
 		ctx,
 		dest,
@@ -192,16 +174,10 @@ func GetContent(ctx context.Context, tx ExecuteAble, dest interface{}, query str
 
 // SelectContent 执行sql查询并返回多行
 func SelectContent(ctx context.Context, tx ExecuteAble, dest interface{}, query string, argMap map[string]interface{}) error {
-	query, args, err := sqlx.Named(query, argMap)
+	query, args, err := wrapSQL(query, argMap, tx)
 	if err != nil {
 		return err
 	}
-	query, args, err = sqlx.In(query, args...)
-	if err != nil {
-		return err
-	}
-	query = tx.Rebind(query)
-	sqlLog(query, args)
 	err = tx.SelectContext(
 		ctx,
 		dest,
@@ -221,16 +197,10 @@ func SelectContent(ctx context.Context, tx ExecuteAble, dest interface{}, query 
 
 // RowsContent 执行sql查询并返回多行
 func RowsContent(ctx context.Context, tx ExecuteAble, query string, argMap map[string]interface{}) ([]map[string]interface{}, error) {
-	query, args, err := sqlx.Named(query, argMap)
+	query, args, err := wrapSQL(query, argMap, tx)
 	if err != nil {
 		return nil, err
 	}
-	query, args, err = sqlx.In(query, args...)
-	if err != nil {
-		return nil, err
-	}
-	query = tx.Rebind(query)
-	sqlLog(query, args)
 	rows, err := tx.QueryContext(
 		ctx,
 		query,
@@ -316,6 +286,21 @@ func Transaction(ctx context.Context, db *sqlx.DB, f func(dbTx ExecuteAble) erro
 	}
 	isComment = true
 	return nil
+}
+
+// wrapSQL 打包sql
+func wrapSQL(query string, argMap map[string]interface{}, tx ExecuteAble) (string, []interface{}, error) {
+	query, args, err := sqlx.Named(query, argMap)
+	if err != nil {
+		return "", nil, err
+	}
+	query, args, err = sqlx.In(query, args...)
+	if err != nil {
+		return "", nil, err
+	}
+	query = tx.Rebind(query)
+	sqlLog(query, args)
+	return query, args, nil
 }
 
 func sqlLog(query string, args []interface{}) {
