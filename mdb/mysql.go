@@ -149,6 +149,33 @@ func ExecuteCountContent(ctx context.Context, tx ExecuteAble, query string, argM
 	return count, nil
 }
 
+// ExecuteCountManyContent 返回sql语句并返回执行行数
+func ExecuteCountManyContent(ctx context.Context, tx ExecuteAble, query string, n int, args ...interface{}) (int64, error) {
+	var err error
+	insertArgs := strings.Repeat("(?),", n)
+	insertArgs = strings.TrimSuffix(insertArgs, ",")
+	query = fmt.Sprintf(query, insertArgs)
+	query, args, err = sqlx.In(query, args...)
+	if err != nil {
+		return 0, err
+	}
+	query = tx.Rebind(query)
+	sqlLog(query, args)
+	ret, err := tx.ExecContext(
+		ctx,
+		query,
+		args...,
+	)
+	if err != nil {
+		return 0, err
+	}
+	count, err := ret.RowsAffected()
+	if err != nil {
+		return 0, err
+	}
+	return count, nil
+}
+
 // GetContent 执行sql查询并返回当个元素
 func GetContent(ctx context.Context, tx ExecuteAble, dest interface{}, query string, argMap map[string]interface{}) (bool, error) {
 	query, args, err := wrapSQL(query, argMap, tx)
