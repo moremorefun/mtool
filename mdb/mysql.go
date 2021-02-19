@@ -12,6 +12,9 @@ import (
 	"github.com/moremorefun/mtool/mlog"
 
 	"github.com/jmoiron/sqlx"
+
+	// 导入mysql
+	_ "github.com/go-sql-driver/mysql"
 )
 
 // 数据库数据类型
