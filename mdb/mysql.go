@@ -86,7 +86,7 @@ func Create(dataSourceName string, showSQL bool) *sqlx.DB {
 	var err error
 	var db *sqlx.DB
 
-	db, err = sqlx.Connect("mdb", dataSourceName)
+	db, err = sqlx.Connect("mysql", dataSourceName)
 	if err != nil {
 		mlog.Log.Fatalf("db connect error: %s", err.Error())
 		return nil
