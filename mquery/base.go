@@ -236,16 +236,16 @@ func (o ConvertDesc) AppendToQuery(buf bytes.Buffer, arg map[string]interface{})
 	return buf, arg, nil
 }
 
-// ConvertValue k=VALUE(k)
-type ConvertValue string
+// ConvertValues k=VALUES(k)
+type ConvertValues string
 
 // AppendToQuery 写入sql,填充arg
-func (o ConvertValue) AppendToQuery(buf bytes.Buffer, arg map[string]interface{}) (bytes.Buffer, map[string]interface{}, error) {
+func (o ConvertValues) AppendToQuery(buf bytes.Buffer, arg map[string]interface{}) (bytes.Buffer, map[string]interface{}, error) {
 	_, err := buf.WriteString(string(o))
 	if err != nil {
 		return bytes.Buffer{}, nil, err
 	}
-	_, err = buf.WriteString("=VALUE(")
+	_, err = buf.WriteString("=VALUES(")
 	if err != nil {
 		return bytes.Buffer{}, nil, err
 	}
