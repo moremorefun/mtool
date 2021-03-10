@@ -1,9 +1,9 @@
 package mgin
 
 import (
-	"bytes"
 	"context"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
 
@@ -25,37 +25,39 @@ type Resp struct {
 	Data    gin.H  `json:"data,omitempty"`
 }
 
-// RepeatReadBody 创建可重复度body
-func RepeatReadBody(c *gin.Context) error {
-	var err error
-	var body []byte
-	if cb, ok := c.Get(gin.BodyBytesKey); ok {
-		if cbb, ok := cb.([]byte); ok {
-			body = cbb
-		}
+func GinBodyRepeat(r io.Reader) (io.ReadCloser, error) {
+	body, err := ioutil.ReadAll(r)
+	if err != nil {
+		return nil, err
 	}
-	if body == nil {
-		body, err = ioutil.ReadAll(c.Request.Body)
-		if err != nil {
-			mlog.Log.Errorf("err: [%T] %s", err, err.Error())
-			c.Abort()
-			return err
-		}
-		c.Set(gin.BodyBytesKey, body)
-	}
-	c.Request.Body = ioutil.NopCloser(bytes.NewBuffer(body))
-	return nil
+	return &nopBodyRepeat{body: body}, nil
 }
+
+type nopBodyRepeat struct {
+	body []byte
+	i    int
+}
+
+func (o *nopBodyRepeat) Read(p []byte) (n int, err error) {
+	n = len(p)
+	if n == 0 {
+		return 0, nil
+	}
+	remain := len(o.body) - o.i
+	if remain < n {
+		n = copy(p, o.body[o.i:])
+		o.i = 0
+		return n, io.EOF
+	}
+	n = copy(p, o.body[o.i:])
+	o.i += n
+	return n, nil
+}
+
+func (*nopBodyRepeat) Close() error { return nil }
 
 // FillBindError 检测gin输入绑定错误
 func FillBindError(c *gin.Context, err error) {
-	repeatErr := RepeatReadBody(c)
-	if repeatErr != nil {
-		mlog.Log.Errorf("err: [%T] %s", repeatErr, repeatErr.Error())
-	} else {
-		body, _ := ioutil.ReadAll(c.Request.Body)
-		mlog.Log.Warnf("bind error body is: %s", body)
-	}
 	DoRespErr(
 		c,
 		ErrorBind,
@@ -125,7 +127,8 @@ func DoEncRespSuccess(c *gin.Context, key string, isAll bool, data gin.H) {
 
 // MidRepeatReadBody 创建可重复度body
 func MidRepeatReadBody(c *gin.Context) {
-	err := RepeatReadBody(c)
+	var err error
+	c.Request.Body, err = GinBodyRepeat(c.Request.Body)
 	if err != nil {
 		mlog.Log.Errorf("err: [%T] %s", err, err.Error())
 		DoRespInternalErr(c)
@@ -137,26 +140,13 @@ func MidRepeatReadBody(c *gin.Context) {
 // MinTokenToUserID token转换为user_id
 func MinTokenToUserID(tx mdb.ExecuteAble, getUserIDByToken func(ctx context.Context, tx mdb.ExecuteAble, token string) (int64, error)) func(*gin.Context) {
 	return func(c *gin.Context) {
-		err := RepeatReadBody(c)
-		if err != nil {
-			DoRespInternalErr(c)
-			c.Abort()
-			return
-		}
 		var req struct {
 			Token string `json:"token" binding:"required"`
 		}
-		err = c.ShouldBind(&req)
+		err := c.ShouldBind(&req)
 		if err != nil {
 			mlog.Log.Errorf("err: [%T] %s", err, err.Error())
 			FillBindError(c, err)
-			c.Abort()
-			return
-		}
-		bodyErr := RepeatReadBody(c)
-		if bodyErr != nil {
-			mlog.Log.Errorf("err: [%T] %s", bodyErr, bodyErr.Error())
-			DoRespInternalErr(c)
 			c.Abort()
 			return
 		}
@@ -180,26 +170,13 @@ func MinTokenToUserID(tx mdb.ExecuteAble, getUserIDByToken func(ctx context.Cont
 // MinTokenToUserIDRedis token转换为user_id
 func MinTokenToUserIDRedis(tx mdb.ExecuteAble, redisClient *redis.Client, getUserIDByToken func(ctx context.Context, tx mdb.ExecuteAble, redisClient *redis.Client, token string) (int64, error)) func(*gin.Context) {
 	return func(c *gin.Context) {
-		err := RepeatReadBody(c)
-		if err != nil {
-			DoRespInternalErr(c)
-			c.Abort()
-			return
-		}
 		var req struct {
 			Token string `json:"token" binding:"required"`
 		}
-		err = c.ShouldBind(&req)
+		err := c.ShouldBind(&req)
 		if err != nil {
 			mlog.Log.Errorf("err: [%T] %s", err, err.Error())
 			FillBindError(c, err)
-			c.Abort()
-			return
-		}
-		bodyErr := RepeatReadBody(c)
-		if bodyErr != nil {
-			mlog.Log.Errorf("err: [%T] %s", bodyErr, bodyErr.Error())
-			DoRespInternalErr(c)
 			c.Abort()
 			return
 		}
@@ -223,25 +200,12 @@ func MinTokenToUserIDRedis(tx mdb.ExecuteAble, redisClient *redis.Client, getUse
 // MinTokenToUserIDRedisIgnore token转换为user_id
 func MinTokenToUserIDRedisIgnore(tx mdb.ExecuteAble, redisClient *redis.Client, getUserIDByToken func(ctx context.Context, tx mdb.ExecuteAble, redisClient *redis.Client, token string) (int64, error)) func(*gin.Context) {
 	return func(c *gin.Context) {
-		err := RepeatReadBody(c)
-		if err != nil {
-			DoRespInternalErr(c)
-			c.Abort()
-			return
-		}
 		var req struct {
 			Token string `json:"token" binding:"omitempty"`
 		}
-		err = c.ShouldBind(&req)
+		err := c.ShouldBind(&req)
 		if err != nil {
 			c.Next()
-			return
-		}
-		bodyErr := RepeatReadBody(c)
-		if bodyErr != nil {
-			mlog.Log.Errorf("err: [%T] %s", bodyErr, bodyErr.Error())
-			DoRespInternalErr(c)
-			c.Abort()
 			return
 		}
 		userID, err := getUserIDByToken(c, tx, redisClient, req.Token)
@@ -256,6 +220,28 @@ func MinTokenToUserIDRedisIgnore(tx mdb.ExecuteAble, redisClient *redis.Client, 
 			return
 		}
 		c.Set("user_id", userID)
+		c.Next()
+	}
+}
+
+func GinCors() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		origin := c.Request.Header.Get("Origin")
+		if len(origin) == 0 {
+			// request is not a CORS request
+			return
+		}
+		reqHeader := c.Request.Header.Get("Access-Control-Request-Headers")
+		method := c.Request.Method
+		c.Header("Access-Control-Allow-Methods", "*")
+		c.Header("Access-Control-Max-Age", "43200")
+		c.Header("Access-Control-Allow-Credentials", "true")
+		c.Header("Access-Control-Allow-Origin", origin)
+		c.Header("Access-Control-Allow-Headers", reqHeader)
+
+		if method == "OPTIONS" {
+			c.AbortWithStatus(http.StatusNoContent)
+		}
 		c.Next()
 	}
 }

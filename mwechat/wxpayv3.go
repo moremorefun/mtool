@@ -19,6 +19,8 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/moremorefun/mtool/mlog"
+
 	"github.com/moremorefun/mtool/mencrypt"
 
 	"github.com/moremorefun/mtool/mutils"
@@ -84,6 +86,63 @@ type StWxRefundCb struct {
 	SuccessTime         string   `xml:"success_time"`
 	TotalFee            string   `xml:"total_fee"`
 	TransactionID       string   `xml:"transaction_id"`
+}
+
+type StWxV3RefundResp struct {
+	Amount struct {
+		Currency         string `json:"currency"`
+		DiscountRefund   int    `json:"discount_refund"`
+		PayerRefund      int    `json:"payer_refund"`
+		PayerTotal       int    `json:"payer_total"`
+		Refund           int    `json:"refund"`
+		SettlementRefund int    `json:"settlement_refund"`
+		SettlementTotal  int    `json:"settlement_total"`
+		Total            int    `json:"total"`
+	} `json:"amount"`
+	Channel             string        `json:"channel"`
+	CreateTime          time.Time     `json:"create_time"`
+	FundsAccount        string        `json:"funds_account"`
+	OutRefundNo         string        `json:"out_refund_no"`
+	OutTradeNo          string        `json:"out_trade_no"`
+	PromotionDetail     []interface{} `json:"promotion_detail"`
+	RefundID            string        `json:"refund_id"`
+	Status              string        `json:"status"`
+	TransactionID       string        `json:"transaction_id"`
+	UserReceivedAccount string        `json:"user_received_account"`
+	Code                string        `json:"code"`
+	Message             string        `json:"message"`
+}
+
+type StWxV3RefundCb struct {
+	ID           string    `json:"id"`
+	CreateTime   time.Time `json:"create_time"`
+	ResourceType string    `json:"resource_type"`
+	EventType    string    `json:"event_type"`
+	Summary      string    `json:"summary"`
+	Resource     struct {
+		OriginalType   string `json:"original_type"`
+		Algorithm      string `json:"algorithm"`
+		Ciphertext     string `json:"ciphertext"`
+		AssociatedData string `json:"associated_data"`
+		Nonce          string `json:"nonce"`
+	} `json:"resource"`
+}
+
+type StWxV3RefundCbContent struct {
+	Mchid         string    `json:"mchid"`
+	OutTradeNo    string    `json:"out_trade_no"`
+	TransactionID string    `json:"transaction_id"`
+	OutRefundNo   string    `json:"out_refund_no"`
+	RefundID      string    `json:"refund_id"`
+	RefundStatus  string    `json:"refund_status"`
+	SuccessTime   time.Time `json:"success_time"`
+	Amount        struct {
+		Total       int `json:"total"`
+		Refund      int `json:"refund"`
+		PayerTotal  int `json:"payer_total"`
+		PayerRefund int `json:"payer_refund"`
+	} `json:"amount"`
+	UserReceivedAccount string `json:"user_received_account"`
 }
 
 // RsaSign 签名
@@ -236,7 +295,7 @@ func PayV3GetHeaderByKey(header map[string][]string, key string) (string, error)
 }
 
 // PayV3GetPrepay 获取预支付信息
-func PayV3GetPrepay(keySerial string, key *rsa.PrivateKey, appID, mchID, openID, payBody, outTradeNo, cbURL string, totalFee int64) (gin.H, string, error) {
+func PayV3GetPrepay(keySerial string, key *rsa.PrivateKey, appID, mchID, openID, payBody, outTradeNo, cbURL string, totalFee int64, expireAt time.Time) (gin.H, string, error) {
 	req := gorequest.New().
 		Post("https://api.mch.weixin.qq.com/v3/pay/transactions/jsapi").
 		Send(
@@ -245,6 +304,7 @@ func PayV3GetPrepay(keySerial string, key *rsa.PrivateKey, appID, mchID, openID,
 				"mchid":        mchID,
 				"description":  payBody,
 				"out_trade_no": outTradeNo,
+				"time_expire":  expireAt.Format(time.RFC3339),
 				"notify_url":   cbURL,
 				"amount": map[string]interface{}{
 					"total": totalFee,
@@ -390,4 +450,89 @@ func PayCheckRefundCb(mchKey string, body []byte) (*StWxRefundCb, error) {
 		return nil, err
 	}
 	return &bodyXML, nil
+}
+
+// WxPayV3Refunds 退款
+func PayV3Refunds(keySerial string, key *rsa.PrivateKey, mchID, transactionID, outRefundNo, cbURL string, totalFee, refundFee int64) (*StWxV3RefundResp, error) {
+	req := gorequest.New().
+		Post("https://api.mch.weixin.qq.com/v3/refund/domestic/refunds").
+		Send(
+			gin.H{
+				"transaction_id": transactionID,
+				"out_refund_no":  outRefundNo,
+				"notify_url":     cbURL,
+				"amount": gin.H{
+					"refund":   refundFee,
+					"total":    totalFee,
+					"currency": "CNY",
+				},
+			},
+		)
+	req, err := PayV3Sign(
+		mchID,
+		keySerial,
+		key,
+		req,
+	)
+	if err != nil {
+		return nil, err
+	}
+	_, body, errs := req.EndBytes()
+	if errs != nil {
+		return nil, errs[0]
+	}
+	mlog.Log.Debugf("body: %s", body)
+	var resp StWxV3RefundResp
+	err = jsoniter.Unmarshal(body, &resp)
+	if err != nil {
+		return nil, err
+	}
+	if resp.Code != "" {
+		return nil, fmt.Errorf("refund err: %s", body)
+	}
+	return &resp, nil
+}
+
+// PayV3DecodeRefundsCb 解析退款回调
+func PayV3DecodeRefundsCb(v3Key string, body []byte) (*StWxV3RefundCbContent, error) {
+	var rawResp StWxV3RefundCb
+	err := jsoniter.Unmarshal(body, &rawResp)
+	if err != nil {
+		return nil, err
+	}
+	if rawResp.EventType != "REFUND.SUCCESS" {
+		return nil, fmt.Errorf("error event_type: %s", rawResp.EventType)
+	}
+	if rawResp.ResourceType != "encrypt-resource" {
+		return nil, fmt.Errorf("error resource_type: %s", rawResp.ResourceType)
+	}
+	originalType := rawResp.Resource.OriginalType
+	if originalType != "refund" {
+		return nil, fmt.Errorf("error original_type: %s", originalType)
+	}
+	algorithm := rawResp.Resource.Algorithm
+	if algorithm != "AEAD_AES_256_GCM" {
+		return nil, fmt.Errorf("error algorithm: %s", algorithm)
+	}
+
+	ciphertext := rawResp.Resource.Ciphertext
+	associatedData := rawResp.Resource.AssociatedData
+	nonce := rawResp.Resource.Nonce
+
+	plain, err := PayV3Decrype(
+		v3Key,
+		ciphertext,
+		nonce,
+		associatedData,
+	)
+	if err != nil {
+		return nil, err
+	}
+	mlog.Log.Debugf("plain: %s", plain)
+	var content StWxV3RefundCbContent
+	err = jsoniter.Unmarshal([]byte(plain), &content)
+	if err != nil {
+		return nil, err
+	}
+	return &content, nil
 }
