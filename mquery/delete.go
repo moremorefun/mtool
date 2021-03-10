@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/gin-gonic/gin"
 	"github.com/moremorefun/mtool/mdb"
 )
 
@@ -32,10 +33,10 @@ func (q *deleteData) Where(whereParts ...SQLAble) *deleteData {
 }
 
 // ToSQL 生成sql
-func (q *deleteData) ToSQL() (string, map[string]interface{}, error) {
+func (q *deleteData) ToSQL() (string, gin.H, error) {
 	var err error
 	var buf bytes.Buffer
-	arg := map[string]interface{}{}
+	arg := gin.H{}
 
 	buf.WriteString("DELETE\nFROM\n    ")
 	if len(q.table) == 0 {

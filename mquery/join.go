@@ -3,6 +3,8 @@ package mquery
 import (
 	"bytes"
 	"fmt"
+
+	"github.com/gin-gonic/gin"
 )
 
 // join类型
@@ -44,7 +46,7 @@ func (q *joinData) On(cond ...SQLAble) *joinData {
 }
 
 // ToSQL 生成sql
-func (q *joinData) AppendToQuery(buf bytes.Buffer, arg map[string]interface{}) (bytes.Buffer, map[string]interface{}, error) {
+func (q *joinData) AppendToQuery(buf bytes.Buffer, arg gin.H) (bytes.Buffer, gin.H, error) {
 	var err error
 	switch q.joinType {
 	case JoinTypeInner:

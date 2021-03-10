@@ -28,10 +28,10 @@ func walk(nodes []XMLNode, f func(XMLNode) bool) {
 }
 
 // XMLWalk 遍历xml
-func XMLWalk(bs []byte) (map[string]interface{}, error) {
+func XMLWalk(bs []byte) (gin.H, error) {
 	buf := bytes.NewBuffer(bs)
 	dec := xml.NewDecoder(buf)
-	r := make(map[string]interface{})
+	r := make(gin.H)
 	var n XMLNode
 	err := dec.Decode(&n)
 	if err != nil {
@@ -48,7 +48,7 @@ func XMLWalk(bs []byte) (map[string]interface{}, error) {
 }
 
 // GetSign 获取签名
-func GetSign(appSecret string, paramsMap map[string]interface{}) string {
+func GetSign(appSecret string, paramsMap gin.H) string {
 	var args []string
 	var keys []string
 	for k := range paramsMap {
@@ -68,7 +68,7 @@ func GetSign(appSecret string, paramsMap map[string]interface{}) string {
 }
 
 // CheckSign 检查签名
-func CheckSign(appSecret string, paramsMap map[string]interface{}) bool {
+func CheckSign(appSecret string, paramsMap gin.H) bool {
 	noSignMap := gin.H{}
 	for k, v := range paramsMap {
 		if k != "sign" {

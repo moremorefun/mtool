@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/gin-gonic/gin"
 	"github.com/moremorefun/mtool/mutils"
 
 	"github.com/moremorefun/mtool/mdb"
@@ -23,7 +24,7 @@ func FormatMapKey(oldKey string) string {
 }
 
 // GetValuesFromRows 获取values
-func GetValuesFromRows(rows []map[string]interface{}, key string) ([]interface{}, error) {
+func GetValuesFromRows(rows []gin.H, key string) ([]interface{}, error) {
 	key = FormatMapKey(key)
 	var values []interface{}
 	for _, row := range rows {
@@ -39,7 +40,7 @@ func GetValuesFromRows(rows []map[string]interface{}, key string) ([]interface{}
 }
 
 // GetValuesFromMap 获取values
-func GetValuesFromMap(m map[string]map[string]interface{}, key string) ([]interface{}, error) {
+func GetValuesFromMap(m map[string]gin.H, key string) ([]interface{}, error) {
 	key = FormatMapKey(key)
 	var values []interface{}
 	for _, row := range m {
@@ -55,7 +56,7 @@ func GetValuesFromMap(m map[string]map[string]interface{}, key string) ([]interf
 }
 
 // GetValuesFromMapRows 获取values
-func GetValuesFromMapRows(ms map[string][]map[string]interface{}, key string) ([]interface{}, error) {
+func GetValuesFromMapRows(ms map[string][]gin.H, key string) ([]interface{}, error) {
 	key = FormatMapKey(key)
 	var values []interface{}
 	for _, rows := range ms {
@@ -73,7 +74,7 @@ func GetValuesFromMapRows(ms map[string][]map[string]interface{}, key string) ([
 }
 
 // SelectRows2One 获取关联map
-func SelectRows2One(ctx context.Context, tx mdb.ExecuteAble, sourceRows []map[string]interface{}, sourceKey, targetTableName, targetKey string, targetColumns []string) (map[string]map[string]interface{}, []interface{}, error) {
+func SelectRows2One(ctx context.Context, tx mdb.ExecuteAble, sourceRows []gin.H, sourceKey, targetTableName, targetKey string, targetColumns []string) (map[string]gin.H, []interface{}, error) {
 	keyValues, err := GetValuesFromRows(sourceRows, sourceKey)
 	if err != nil {
 		return nil, nil, err
@@ -83,7 +84,7 @@ func SelectRows2One(ctx context.Context, tx mdb.ExecuteAble, sourceRows []map[st
 }
 
 // SelectRows2Many 获取关联map
-func SelectRows2Many(ctx context.Context, tx mdb.ExecuteAble, sourceRows []map[string]interface{}, sourceKey, targetTableName, targetKey string, targetColumns []string) (map[string][]map[string]interface{}, []interface{}, error) {
+func SelectRows2Many(ctx context.Context, tx mdb.ExecuteAble, sourceRows []gin.H, sourceKey, targetTableName, targetKey string, targetColumns []string) (map[string][]gin.H, []interface{}, error) {
 	keyValues, err := GetValuesFromRows(sourceRows, sourceKey)
 	if err != nil {
 		return nil, nil, err
@@ -93,7 +94,7 @@ func SelectRows2Many(ctx context.Context, tx mdb.ExecuteAble, sourceRows []map[s
 }
 
 // SelectKeys2One 获取关联map
-func SelectKeys2One(ctx context.Context, tx mdb.ExecuteAble, keyValues []interface{}, targetTableName, targetKey string, targetColumns []string) (map[string]map[string]interface{}, error) {
+func SelectKeys2One(ctx context.Context, tx mdb.ExecuteAble, keyValues []interface{}, targetTableName, targetKey string, targetColumns []string) (map[string]gin.H, error) {
 	if len(keyValues) == 0 {
 		return nil, nil
 	}
@@ -114,7 +115,7 @@ func SelectKeys2One(ctx context.Context, tx mdb.ExecuteAble, keyValues []interfa
 		return nil, err
 	}
 	mapTargetKey := FormatMapKey(targetKey)
-	targetMap := map[string]map[string]interface{}{}
+	targetMap := map[string]gin.H{}
 	for _, targetRow := range targetRows {
 		kv, ok := targetRow[mapTargetKey]
 		if !ok {
@@ -127,7 +128,7 @@ func SelectKeys2One(ctx context.Context, tx mdb.ExecuteAble, keyValues []interfa
 }
 
 // SelectKeys2Many 获取关联map
-func SelectKeys2Many(ctx context.Context, tx mdb.ExecuteAble, keyValues []interface{}, targetTableName, targetKey string, targetColumns []string) (map[string][]map[string]interface{}, error) {
+func SelectKeys2Many(ctx context.Context, tx mdb.ExecuteAble, keyValues []interface{}, targetTableName, targetKey string, targetColumns []string) (map[string][]gin.H, error) {
 	if len(keyValues) == 0 {
 		return nil, nil
 	}
@@ -148,7 +149,7 @@ func SelectKeys2Many(ctx context.Context, tx mdb.ExecuteAble, keyValues []interf
 		return nil, err
 	}
 	mapTargetKey := FormatMapKey(targetKey)
-	targetMap := map[string][]map[string]interface{}{}
+	targetMap := map[string][]gin.H{}
 	for _, targetRow := range targetRows {
 		kv, ok := targetRow[mapTargetKey]
 		if !ok {

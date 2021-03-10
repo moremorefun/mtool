@@ -1,8 +1,12 @@
 package mquery
 
-import "bytes"
+import (
+	"bytes"
+
+	"github.com/gin-gonic/gin"
+)
 
 // SQLAble sql语句生成接口
 type SQLAble interface {
-	AppendToQuery(bytes.Buffer, map[string]interface{}) (bytes.Buffer, map[string]interface{}, error)
+	AppendToQuery(bytes.Buffer, gin.H) (bytes.Buffer, gin.H, error)
 }

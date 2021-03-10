@@ -299,17 +299,17 @@ func PayV3GetPrepay(keySerial string, key *rsa.PrivateKey, appID, mchID, openID,
 	req := gorequest.New().
 		Post("https://api.mch.weixin.qq.com/v3/pay/transactions/jsapi").
 		Send(
-			map[string]interface{}{
+			gin.H{
 				"appid":        appID,
 				"mchid":        mchID,
 				"description":  payBody,
 				"out_trade_no": outTradeNo,
 				"time_expire":  expireAt.Format(time.RFC3339),
 				"notify_url":   cbURL,
-				"amount": map[string]interface{}{
+				"amount": gin.H{
 					"total": totalFee,
 				},
-				"payer": map[string]interface{}{
+				"payer": gin.H{
 					"openid": openID,
 				},
 			},

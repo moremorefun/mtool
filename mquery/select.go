@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"strconv"
 
+	"github.com/gin-gonic/gin"
 	"github.com/moremorefun/mtool/mdb"
 )
 
@@ -125,7 +126,7 @@ func (q *selectData) As(newName string) *selectData {
 }
 
 // AppendToQuery 添加输入
-func (q *selectData) AppendToQuery(buf bytes.Buffer, arg map[string]interface{}) (bytes.Buffer, map[string]interface{}, error) {
+func (q *selectData) AppendToQuery(buf bytes.Buffer, arg gin.H) (bytes.Buffer, gin.H, error) {
 	var err error
 	if len(q.as) > 0 {
 		buf.WriteString("(\n")
@@ -226,10 +227,10 @@ func (q *selectData) AppendToQuery(buf bytes.Buffer, arg map[string]interface{})
 }
 
 // ToSQL 生成sql
-func (q *selectData) ToSQL() (string, map[string]interface{}, error) {
+func (q *selectData) ToSQL() (string, gin.H, error) {
 	var err error
 	var buf bytes.Buffer
-	arg := map[string]interface{}{}
+	arg := gin.H{}
 
 	buf, arg, err = q.AppendToQuery(buf, arg)
 	if err != nil {
@@ -275,7 +276,7 @@ func (q *selectData) DoSelect(ctx context.Context, tx mdb.ExecuteAble, dest inte
 }
 
 // RowInterface 获取数据
-func (q *selectData) Row(ctx context.Context, tx mdb.ExecuteAble) (map[string]interface{}, error) {
+func (q *selectData) Row(ctx context.Context, tx mdb.ExecuteAble) (gin.H, error) {
 	rows, err := q.Limit(1).Rows(
 		ctx,
 		tx,
@@ -293,7 +294,7 @@ func (q *selectData) Row(ctx context.Context, tx mdb.ExecuteAble) (map[string]in
 }
 
 // RowsInterface 获取数据
-func (q *selectData) Rows(ctx context.Context, tx mdb.ExecuteAble) ([]map[string]interface{}, error) {
+func (q *selectData) Rows(ctx context.Context, tx mdb.ExecuteAble) ([]gin.H, error) {
 	query, arg, err := q.ToSQL()
 	if err == ErrInValueLenZero {
 		return nil, nil

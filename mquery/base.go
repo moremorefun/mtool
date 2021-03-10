@@ -7,6 +7,8 @@ import (
 	"reflect"
 	"strconv"
 	"strings"
+
+	"github.com/gin-gonic/gin"
 )
 
 var globalIndex int64
@@ -30,7 +32,7 @@ func getK(old string) string {
 type ConvertRaw string
 
 // AppendToQuery 写入sql,填充arg
-func (o ConvertRaw) AppendToQuery(buf bytes.Buffer, arg map[string]interface{}) (bytes.Buffer, map[string]interface{}, error) {
+func (o ConvertRaw) AppendToQuery(buf bytes.Buffer, arg gin.H) (bytes.Buffer, gin.H, error) {
 	_, err := buf.WriteString(string(o))
 	if err != nil {
 		return bytes.Buffer{}, nil, err
@@ -69,7 +71,7 @@ func ConvertEqMake(k string, v interface{}) ConvertEq {
 }
 
 // AppendToQuery 写入sql,填充arg
-func (o ConvertEq) AppendToQuery(buf bytes.Buffer, arg map[string]interface{}) (bytes.Buffer, map[string]interface{}, error) {
+func (o ConvertEq) AppendToQuery(buf bytes.Buffer, arg gin.H) (bytes.Buffer, gin.H, error) {
 	k := getK(o.K)
 
 	buf.WriteString(o.K)
@@ -103,7 +105,7 @@ func ConvertAddMake(k string, v interface{}) ConvertAdd {
 }
 
 // AppendToQuery 写入sql,填充arg
-func (o ConvertAdd) AppendToQuery(buf bytes.Buffer, arg map[string]interface{}) (bytes.Buffer, map[string]interface{}, error) {
+func (o ConvertAdd) AppendToQuery(buf bytes.Buffer, arg gin.H) (bytes.Buffer, gin.H, error) {
 	k := getK(o.K)
 
 	_, err := buf.WriteString(o.K)
@@ -142,7 +144,7 @@ func ConvertGtMake(k string, v interface{}) ConvertGt {
 }
 
 // AppendToQuery 写入sql,填充arg
-func (o ConvertGt) AppendToQuery(buf bytes.Buffer, arg map[string]interface{}) (bytes.Buffer, map[string]interface{}, error) {
+func (o ConvertGt) AppendToQuery(buf bytes.Buffer, arg gin.H) (bytes.Buffer, gin.H, error) {
 	k := getK(o.K)
 
 	_, err := buf.WriteString(o.K)
@@ -173,7 +175,7 @@ func ConvertLtMake(k string, v interface{}) ConvertLt {
 }
 
 // AppendToQuery 写入sql,填充arg
-func (o ConvertLt) AppendToQuery(buf bytes.Buffer, arg map[string]interface{}) (bytes.Buffer, map[string]interface{}, error) {
+func (o ConvertLt) AppendToQuery(buf bytes.Buffer, arg gin.H) (bytes.Buffer, gin.H, error) {
 	k := getK(o.K)
 
 	_, err := buf.WriteString(o.K)
@@ -204,7 +206,7 @@ func ConvertEqRawMake(k, v string) ConvertEqRaw {
 }
 
 // AppendToQuery 写入sql,填充arg
-func (o ConvertEqRaw) AppendToQuery(buf bytes.Buffer, arg map[string]interface{}) (bytes.Buffer, map[string]interface{}, error) {
+func (o ConvertEqRaw) AppendToQuery(buf bytes.Buffer, arg gin.H) (bytes.Buffer, gin.H, error) {
 	_, err := buf.WriteString(o.K)
 	if err != nil {
 		return bytes.Buffer{}, nil, err
@@ -224,7 +226,7 @@ func (o ConvertEqRaw) AppendToQuery(buf bytes.Buffer, arg map[string]interface{}
 type ConvertDesc string
 
 // AppendToQuery 写入sql,填充arg
-func (o ConvertDesc) AppendToQuery(buf bytes.Buffer, arg map[string]interface{}) (bytes.Buffer, map[string]interface{}, error) {
+func (o ConvertDesc) AppendToQuery(buf bytes.Buffer, arg gin.H) (bytes.Buffer, gin.H, error) {
 	_, err := buf.WriteString(string(o))
 	if err != nil {
 		return bytes.Buffer{}, nil, err
@@ -240,7 +242,7 @@ func (o ConvertDesc) AppendToQuery(buf bytes.Buffer, arg map[string]interface{})
 type ConvertValues string
 
 // AppendToQuery 写入sql,填充arg
-func (o ConvertValues) AppendToQuery(buf bytes.Buffer, arg map[string]interface{}) (bytes.Buffer, map[string]interface{}, error) {
+func (o ConvertValues) AppendToQuery(buf bytes.Buffer, arg gin.H) (bytes.Buffer, gin.H, error) {
 	_, err := buf.WriteString(string(o))
 	if err != nil {
 		return bytes.Buffer{}, nil, err
@@ -275,7 +277,7 @@ func ConvertOrMake(left, right SQLAble) ConvertOr {
 }
 
 // AppendToQuery 写入sql,填充arg
-func (o ConvertOr) AppendToQuery(buf bytes.Buffer, arg map[string]interface{}) (bytes.Buffer, map[string]interface{}, error) {
+func (o ConvertOr) AppendToQuery(buf bytes.Buffer, arg gin.H) (bytes.Buffer, gin.H, error) {
 	var err error
 	if o.Left == nil || o.Right == nil {
 		return bytes.Buffer{}, nil, fmt.Errorf("or empty")
@@ -307,7 +309,7 @@ func ConvertFuncAsMake(f, col, as string) ConvertFuncAs {
 }
 
 // AppendToQuery 写入sql,填充arg
-func (o ConvertFuncAs) AppendToQuery(buf bytes.Buffer, arg map[string]interface{}) (bytes.Buffer, map[string]interface{}, error) {
+func (o ConvertFuncAs) AppendToQuery(buf bytes.Buffer, arg gin.H) (bytes.Buffer, gin.H, error) {
 	_, err := buf.WriteString(o.Func)
 	if err != nil {
 		return bytes.Buffer{}, nil, err

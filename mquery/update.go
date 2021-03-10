@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/gin-gonic/gin"
 	"github.com/moremorefun/mtool/mdb"
 )
 
@@ -39,10 +40,10 @@ func (q *updateData) Where(whereParts ...SQLAble) *updateData {
 }
 
 // ToSQL 生成sql
-func (q *updateData) ToSQL() (string, map[string]interface{}, error) {
+func (q *updateData) ToSQL() (string, gin.H, error) {
 	var err error
 	var buf bytes.Buffer
-	arg := map[string]interface{}{}
+	arg := gin.H{}
 
 	buf.WriteString("UPDATE\n    ")
 	if len(q.table) == 0 {

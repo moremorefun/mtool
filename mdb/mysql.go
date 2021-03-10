@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/gin-gonic/gin"
 	"github.com/moremorefun/mtool/mlog"
 
 	"github.com/jmoiron/sqlx"
@@ -111,7 +112,7 @@ func SetShowSQL(b bool) {
 }
 
 // ExecuteLastIDContent 执行sql语句并返回lastID
-func ExecuteLastIDContent(ctx context.Context, tx ExecuteAble, query string, argMap map[string]interface{}) (int64, error) {
+func ExecuteLastIDContent(ctx context.Context, tx ExecuteAble, query string, argMap gin.H) (int64, error) {
 	query, args, err := wrapSQL(query, argMap, tx)
 	if err != nil {
 		return 0, err
@@ -132,7 +133,7 @@ func ExecuteLastIDContent(ctx context.Context, tx ExecuteAble, query string, arg
 }
 
 // ExecuteCountContent 执行sql语句返回执行个数
-func ExecuteCountContent(ctx context.Context, tx ExecuteAble, query string, argMap map[string]interface{}) (int64, error) {
+func ExecuteCountContent(ctx context.Context, tx ExecuteAble, query string, argMap gin.H) (int64, error) {
 	query, args, err := wrapSQL(query, argMap, tx)
 	if err != nil {
 		return 0, err
@@ -180,7 +181,7 @@ func ExecuteCountManyContent(ctx context.Context, tx ExecuteAble, query string, 
 }
 
 // GetContent 执行sql查询并返回当个元素
-func GetContent(ctx context.Context, tx ExecuteAble, dest interface{}, query string, argMap map[string]interface{}) (bool, error) {
+func GetContent(ctx context.Context, tx ExecuteAble, dest interface{}, query string, argMap gin.H) (bool, error) {
 	query, args, err := wrapSQL(query, argMap, tx)
 	if err != nil {
 		return false, err
@@ -203,7 +204,7 @@ func GetContent(ctx context.Context, tx ExecuteAble, dest interface{}, query str
 }
 
 // SelectContent 执行sql查询并返回多行
-func SelectContent(ctx context.Context, tx ExecuteAble, dest interface{}, query string, argMap map[string]interface{}) error {
+func SelectContent(ctx context.Context, tx ExecuteAble, dest interface{}, query string, argMap gin.H) error {
 	query, args, err := wrapSQL(query, argMap, tx)
 	if err != nil {
 		return err
@@ -226,7 +227,7 @@ func SelectContent(ctx context.Context, tx ExecuteAble, dest interface{}, query 
 }
 
 // RowsContent 执行sql查询并返回多行
-func RowsContent(ctx context.Context, tx ExecuteAble, query string, argMap map[string]interface{}) ([]map[string]interface{}, error) {
+func RowsContent(ctx context.Context, tx ExecuteAble, query string, argMap gin.H) ([]gin.H, error) {
 	query, args, err := wrapSQL(query, argMap, tx)
 	if err != nil {
 		return nil, err
@@ -278,13 +279,13 @@ func RowsContent(ctx context.Context, tx ExecuteAble, query string, argMap map[s
 		columns[i] = e
 		columnsPoint[i] = e.Addr().Interface()
 	}
-	var mapRows []map[string]interface{}
+	var mapRows []gin.H
 	for rows.Next() {
 		err := rows.Scan(columnsPoint...)
 		if err != nil {
 			return nil, err
 		}
-		rowMap := map[string]interface{}{}
+		rowMap := gin.H{}
 		for i, v := range columns {
 			colName := cts[i].Name()
 			rowMap[colName] = v.Interface()
@@ -319,7 +320,7 @@ func Transaction(ctx context.Context, db *sqlx.DB, f func(dbTx ExecuteAble) erro
 }
 
 // wrapSQL 打包sql
-func wrapSQL(query string, argMap map[string]interface{}, tx ExecuteAble) (string, []interface{}, error) {
+func wrapSQL(query string, argMap gin.H, tx ExecuteAble) (string, []interface{}, error) {
 	query, args, err := sqlx.Named(query, argMap)
 	if err != nil {
 		return "", nil, err

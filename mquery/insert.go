@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/gin-gonic/gin"
 	"github.com/moremorefun/mtool/mdb"
 )
 
@@ -53,11 +54,11 @@ func (q *insertData) Duplicates(duplicates ...SQLAble) *insertData {
 }
 
 // ToSQL 生成sql
-func (q *insertData) ToSQL() (string, map[string]interface{}, error) {
+func (q *insertData) ToSQL() (string, gin.H, error) {
 	var err error
 
 	var buf bytes.Buffer
-	arg := map[string]interface{}{}
+	arg := gin.H{}
 	buf.WriteString("INSERT")
 	if q.isIgnore {
 		buf.WriteString(" IGNORE")
