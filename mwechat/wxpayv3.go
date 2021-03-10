@@ -88,6 +88,7 @@ type StWxRefundCb struct {
 	TransactionID       string   `xml:"transaction_id"`
 }
 
+// StWxV3RefundResp 退款调用回复
 type StWxV3RefundResp struct {
 	Amount struct {
 		Currency         string `json:"currency"`
@@ -113,6 +114,7 @@ type StWxV3RefundResp struct {
 	Message             string        `json:"message"`
 }
 
+// StWxV3RefundCb 退款回调
 type StWxV3RefundCb struct {
 	ID           string    `json:"id"`
 	CreateTime   time.Time `json:"create_time"`
@@ -128,6 +130,7 @@ type StWxV3RefundCb struct {
 	} `json:"resource"`
 }
 
+// StWxV3RefundCbContent 退款回调解密内容
 type StWxV3RefundCbContent struct {
 	Mchid         string    `json:"mchid"`
 	OutTradeNo    string    `json:"out_trade_no"`
@@ -452,7 +455,7 @@ func PayCheckRefundCb(mchKey string, body []byte) (*StWxRefundCb, error) {
 	return &bodyXML, nil
 }
 
-// WxPayV3Refunds 退款
+// PayV3Refunds 退款
 func PayV3Refunds(keySerial string, key *rsa.PrivateKey, mchID, transactionID, outRefundNo, cbURL string, totalFee, refundFee int64) (*StWxV3RefundResp, error) {
 	req := gorequest.New().
 		Post("https://api.mch.weixin.qq.com/v3/refund/domestic/refunds").

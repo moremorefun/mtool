@@ -162,10 +162,9 @@ func SQLRedisGetWxToken(c context.Context, tx mdb.ExecuteAble, redisClient *redi
 	)
 	if err != nil {
 		return "", err
-	} else {
-		if "" != token {
-			return token, nil
-		}
+	}
+	if "" != token {
+		return token, nil
 	}
 	type apiRespSt struct {
 		AccessToken string `json:"access_token"`
