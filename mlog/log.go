@@ -53,6 +53,21 @@ func SetToProd() error {
 	return nil
 }
 
+// SetToFile 设置写入文件
+func SetToFile(path string) {
+	var err error
+	conf = zap.NewDevelopmentConfig()
+	conf.Encoding = "console"
+	conf.DisableStacktrace = true
+	conf.OutputPaths = []string{"stderr", path}
+	conf.ErrorOutputPaths = []string{"stderr", path}
+	ZapLog, err = conf.Build()
+	if err != nil {
+		log.Fatalf("build logger error: [%T] %s", err, err.Error())
+	}
+	Log = ZapLog.Sugar()
+}
+
 // SetLevel 设置日志等级
 func SetLevel(level zapcore.Level) error {
 	var err error
