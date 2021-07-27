@@ -76,8 +76,5 @@ func CheckSign(appSecret string, paramsMap gin.H) bool {
 		}
 	}
 	getSign := GetSign(appSecret, noSignMap)
-	if getSign != paramsMap["sign"] {
-		return false
-	}
-	return true
+	return getSign == paramsMap["sign"]
 }

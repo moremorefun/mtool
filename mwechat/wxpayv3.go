@@ -334,6 +334,9 @@ func PayV3GetPrepay(keySerial string, key *rsa.PrivateKey, appID, mchID, openID,
 		PrepayID string `json:"prepay_id"`
 	}
 	err = jsoniter.Unmarshal(body, &prepayResp)
+	if err != nil {
+		return nil, "", err
+	}
 	if len(prepayResp.PrepayID) == 0 {
 		return nil, "", fmt.Errorf("get prepay id err: %s", body)
 	}
