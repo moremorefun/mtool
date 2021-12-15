@@ -44,26 +44,26 @@ func GetUUIDStr() string {
 }
 
 // GetLocalDayStart 获取当天开始时间
-func GetLocalDayStart() (*time.Time, error) {
+func GetLocalDayStart() (time.Time, error) {
 	cstSh := time.FixedZone("CST", 8*3600)
 	now := time.Now().In(cstSh)
 	nowStr := now.Format("2006-01-02")
 	localDayStart, err := time.ParseInLocation("2006-01-02", nowStr, cstSh)
 	if err != nil {
-		return nil, err
+		return time.Time{}, err
 	}
-	return &localDayStart, nil
+	return localDayStart, nil
 }
 
 // GetLocalWeekStart 获取周天开始时间
-func GetLocalWeekStart() (*time.Time, error) {
+func GetLocalWeekStart() (time.Time, error) {
 	// 计算起始时间
 	cstSh := time.FixedZone("CST", 8*3600)
 	now := time.Now().In(cstSh)
 	nowStr := now.Format("2006-01-02")
 	localDayStart, err := time.ParseInLocation("2006-01-02", nowStr, cstSh)
 	if err != nil {
-		return nil, err
+		return time.Time{}, err
 	}
 	weekDay := localDayStart.Weekday()
 	if weekDay == 0 {
@@ -72,5 +72,5 @@ func GetLocalWeekStart() (*time.Time, error) {
 		weekDay -= 1
 	}
 	dailyStart := localDayStart.AddDate(0, 0, -int(weekDay))
-	return &dailyStart, nil
+	return dailyStart, nil
 }
