@@ -74,3 +74,11 @@ func GetLocalWeekStart() (time.Time, error) {
 	dailyStart := localDayStart.AddDate(0, 0, -int(weekDay))
 	return dailyStart, nil
 }
+
+// GetLocalDayStr 获取当天日期字符串
+func GetLocalDayStr() string {
+	cstSh := time.FixedZone("CST", 8*3600)
+	now := time.Now().In(cstSh)
+	nowStr := now.Format("2006-01-02")
+	return nowStr
+}
