@@ -82,3 +82,17 @@ func GetLocalDayStr() string {
 	nowStr := now.Format("2006-01-02")
 	return nowStr
 }
+
+// GetLocalDayStrByStartHour 获取当天日期字符串
+func GetLocalDayStrByStartHour(hour int) (string, error) {
+	todayStr := GetLocalDayStr()
+	dataStart, err := GetLocalDayStart()
+	if err != nil {
+		return "", err
+	}
+	if dataStart.Hour() < hour {
+		// 计入上一天
+		todayStr = dataStart.AddDate(0, 0, -1).Format("2006-01-02")
+	}
+	return todayStr, nil
+}
