@@ -86,11 +86,14 @@ func GetLocalDayStr() string {
 // GetLocalDayStrByStartHour 获取当天日期字符串
 func GetLocalDayStrByStartHour(hour int) (string, error) {
 	todayStr := GetLocalDayStr()
+	cstSh := time.FixedZone("CST", 8*3600)
+	now := time.Now().In(cstSh)
+
 	dataStart, err := GetLocalDayStart()
 	if err != nil {
 		return "", err
 	}
-	if dataStart.Hour() < hour {
+	if now.Hour() < hour {
 		// 计入上一天
 		todayStr = dataStart.AddDate(0, 0, -1).Format("2006-01-02")
 	}
