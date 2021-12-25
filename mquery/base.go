@@ -136,8 +136,8 @@ func (o ConvertAdd) AppendToQuery(buf bytes.Buffer, arg gin.H) (bytes.Buffer, gi
 type ConvertMinus ConvertKv
 
 // ConvertMinusMake 生成
-func ConvertMinusMake(k string, v interface{}) ConvertAdd {
-	return ConvertAdd{
+func ConvertMinusMake(k string, v interface{}) ConvertMinus {
+	return ConvertMinus{
 		K: k,
 		V: v,
 	}
