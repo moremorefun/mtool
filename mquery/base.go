@@ -132,6 +132,45 @@ func (o ConvertAdd) AppendToQuery(buf bytes.Buffer, arg gin.H) (bytes.Buffer, gi
 	return buf, arg, nil
 }
 
+// ConvertMinus k=k-:k
+type ConvertMinus ConvertKv
+
+// ConvertMinusMake 生成
+func ConvertMinusMake(k string, v interface{}) ConvertAdd {
+	return ConvertAdd{
+		K: k,
+		V: v,
+	}
+}
+
+// AppendToQuery 写入sql,填充arg
+func (o ConvertMinus) AppendToQuery(buf bytes.Buffer, arg gin.H) (bytes.Buffer, gin.H, error) {
+	k := getK(o.K)
+
+	_, err := buf.WriteString(o.K)
+	if err != nil {
+		return bytes.Buffer{}, nil, err
+	}
+	_, err = buf.WriteString("=")
+	if err != nil {
+		return bytes.Buffer{}, nil, err
+	}
+	_, err = buf.WriteString(o.K)
+	if err != nil {
+		return bytes.Buffer{}, nil, err
+	}
+	_, err = buf.WriteString("-:")
+	if err != nil {
+		return bytes.Buffer{}, nil, err
+	}
+	_, err = buf.WriteString(k)
+	if err != nil {
+		return bytes.Buffer{}, nil, err
+	}
+	arg[k] = o.V
+	return buf, arg, nil
+}
+
 // ConvertGt k>:k
 type ConvertGt ConvertKv
 
