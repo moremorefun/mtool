@@ -99,3 +99,19 @@ func GetLocalDayStrByStartHour(hour int) (string, error) {
 	}
 	return todayStr, nil
 }
+
+// GetLocalWeekStrByStartHour 获取当周日期字符串
+func GetLocalWeekStrByStartHour(hour int) (string, error) {
+	cstSh := time.FixedZone("CST", 8*3600)
+	now := time.Now().In(cstSh)
+
+	weekStartTime, err := GetLocalWeekStart()
+	if err != nil {
+		return "", err
+	}
+	if now.Hour() < hour {
+		// 计入上一周
+		weekStartTime = weekStartTime.AddDate(0, 0, -7)
+	}
+	return weekStartTime.Format("2006-01-02"), nil
+}
