@@ -91,7 +91,7 @@ GotoHttpRetry:
 		Query(gin.H{
 			"appid":      appID,
 			"secret":     appSecret,
-			"js_code":    code,
+			"code":       code,
 			"grant_type": "authorization_code",
 		}).EndBytes()
 	if errs != nil {
