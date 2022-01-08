@@ -115,3 +115,37 @@ func GetLocalWeekStrByStartHour(hour int) (string, error) {
 	}
 	return weekStartTime.Format("2006-01-02"), nil
 }
+
+// GetLocalDayByStartHour 获取当天日期开始时间
+func GetLocalDayByStartHour(hour int) (time.Time, error) {
+	dayStart, err := GetLocalDayStart()
+	if err != nil {
+		return time.Time{}, err
+	}
+	dayStart = dayStart.Add(time.Hour * time.Duration(hour))
+	cstSh := time.FixedZone("CST", 8*3600)
+	now := time.Now().In(cstSh)
+
+	if now.Hour() < hour {
+		// 计入上一天
+		return dayStart.AddDate(0, 0, -1), nil
+
+	}
+	return dayStart, nil
+}
+
+// GetLocalWeekByStartHour 获取当周日期开始时间
+func GetLocalWeekByStartHour(hour int) (time.Time, error) {
+	cstSh := time.FixedZone("CST", 8*3600)
+	now := time.Now().In(cstSh)
+
+	weekStartTime, err := GetLocalWeekStart()
+	if err != nil {
+		return time.Time{}, err
+	}
+	if now.Hour() < hour {
+		// 计入上一周
+		weekStartTime = weekStartTime.AddDate(0, 0, -7)
+	}
+	return weekStartTime.Add(time.Hour * time.Duration(hour)), nil
+}
