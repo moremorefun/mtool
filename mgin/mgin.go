@@ -33,6 +33,40 @@ func GinBodyRepeat(r io.Reader) (io.ReadCloser, error) {
 	return &nopBodyRepeat{body: body}, nil
 }
 
+// GinMidFilterEnc 获取加密中间件
+func GinMidFilterEnc(key string, isForce bool) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		var req struct {
+			Enc string `form:"enc" binding:"omitempty"`
+		}
+		err := c.ShouldBind(&req)
+		if err != nil {
+			mlog.Log.Errorf("err: [%T] %s", err, err.Error())
+			DoRespInternalErr(c)
+			c.Abort()
+			return
+		}
+		if len(req.Enc) > 0 {
+			// 解密
+			deStr, err := mencrypt.AesDecrypt(req.Enc, key)
+			if err != nil {
+				mlog.Log.Errorf("err: [%T] %s", err, err.Error())
+				DoRespInternalErr(c)
+				c.Abort()
+				return
+			}
+			c.Request.Body = &nopBodyRepeat{body: []byte(deStr)}
+		} else {
+			if isForce {
+				mlog.Log.Errorf("err: [%T] %s", err, err.Error())
+				DoRespInternalErr(c)
+				c.Abort()
+				return
+			}
+		}
+	}
+}
+
 type nopBodyRepeat struct {
 	body []byte
 	i    int
