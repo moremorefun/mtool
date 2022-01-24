@@ -7,6 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/moremorefun/mtool/mlog"
 	"github.com/parnurzeal/gorequest"
+	"github.com/qiniu/go-sdk/v7/auth"
 	"image"
 	"time"
 
@@ -73,6 +74,25 @@ type StRespImageCensor struct {
 			} `json:"terror"`
 		} `json:"scenes"`
 	} `json:"result"`
+}
+
+func Delete(access string, secret string, bucket string, fileKey string) error {
+	mac := auth.New(access, secret)
+
+	cfg := storage.Config{
+		// 是否使用https域名进行资源管理
+		UseHTTPS: true,
+	}
+	// 指定空间所在的区域，如果不指定将自动探测
+	// 如果没有特殊需求，默认不需要指定
+	//cfg.Zone=&storage.ZoneHuabei
+	bucketManager := storage.NewBucketManager(mac, &cfg)
+
+	err := bucketManager.Delete(bucket, fileKey)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 // Upload 上传到qiniu
