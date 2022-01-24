@@ -19,6 +19,7 @@ import (
 type StRespTextCensor struct {
 	Code    int    `json:"code"`
 	Message string `json:"message"`
+	Error   string `json:"error"`
 	Result  struct {
 		Suggestion string `json:"suggestion"`
 		Scenes     struct {
@@ -36,6 +37,7 @@ type StRespTextCensor struct {
 type StRespImageCensor struct {
 	Code    int    `json:"code"`
 	Message string `json:"message"`
+	Error   string `json:"error"`
 	EntryID string `json:"entry_id"`
 	Result  struct {
 		Suggestion string `json:"suggestion"`
