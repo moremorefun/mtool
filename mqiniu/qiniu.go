@@ -16,48 +16,62 @@ import (
 )
 
 type StRespTextCensor struct {
-	Message string `json:"message"`
 	Code    int    `json:"code"`
+	Message string `json:"message"`
 	Result  struct {
-		Scenes struct {
+		Suggestion string `json:"suggestion"`
+		Scenes     struct {
 			Antispam struct {
-				Details []struct {
-					Score float64 `json:"score"`
-					Label string  `json:"label"`
-				} `json:"details"`
 				Suggestion string `json:"suggestion"`
+				Details    []struct {
+					Label string  `json:"label"`
+					Score float64 `json:"score"`
+				} `json:"details"`
 			} `json:"antispam"`
 		} `json:"scenes"`
-		Suggestion string `json:"suggestion"`
 	} `json:"result"`
 }
 
 type StRespImageCensor struct {
-	Message string `json:"message"`
 	Code    int    `json:"code"`
+	Message string `json:"message"`
+	EntryID string `json:"entry_id"`
 	Result  struct {
-		Scenes struct {
-			Terror struct {
-				Details []struct {
-					Score      float64 `json:"score"`
+		Suggestion string `json:"suggestion"`
+		Scenes     struct {
+			Ads struct {
+				Suggestion string `json:"suggestion"`
+				Details    []struct {
 					Suggestion string  `json:"suggestion"`
 					Label      string  `json:"label"`
+					Score      float64 `json:"score"`
 				} `json:"details"`
-				Suggestion string `json:"suggestion"`
-			} `json:"terror"`
+			} `json:"ads"`
 			Politician struct {
 				Suggestion string `json:"suggestion"`
-			} `json:"politician"`
-			Pulp struct {
-				Details []struct {
-					Score      float64 `json:"score"`
+				Details    []struct {
 					Suggestion string  `json:"suggestion"`
 					Label      string  `json:"label"`
+					Score      float64 `json:"score"`
 				} `json:"details"`
+			} `json:"politician"`
+			Pulp struct {
 				Suggestion string `json:"suggestion"`
+				Details    []struct {
+					Suggestion string  `json:"suggestion"`
+					Label      string  `json:"label"`
+					Score      float64 `json:"score"`
+				} `json:"details"`
 			} `json:"pulp"`
+			Terror struct {
+				Suggestion string `json:"suggestion"`
+				Details    []struct {
+					Suggestion string  `json:"suggestion"`
+					Label      string  `json:"label"`
+					Score      float64 `json:"score"`
+				} `json:"details"`
+			} `json:"terror"`
 		} `json:"scenes"`
-		Suggestion string `json:"suggestion"`
 	} `json:"result"`
 }
 
