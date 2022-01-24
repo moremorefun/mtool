@@ -3,12 +3,63 @@ package mqiniu
 import (
 	"bytes"
 	"context"
+	"encoding/json"
+	"github.com/gin-gonic/gin"
+	"github.com/moremorefun/mtool/mlog"
+	"github.com/parnurzeal/gorequest"
 	"image"
+	"time"
 
 	"github.com/disintegration/imaging"
 	"github.com/qiniu/go-sdk/v7/auth/qbox"
 	"github.com/qiniu/go-sdk/v7/storage"
 )
+
+type StRespTextCensor struct {
+	Message string `json:"message"`
+	Code    int    `json:"code"`
+	Result  struct {
+		Scenes struct {
+			Antispam struct {
+				Details []struct {
+					Score float64 `json:"score"`
+					Label string  `json:"label"`
+				} `json:"details"`
+				Suggestion string `json:"suggestion"`
+			} `json:"antispam"`
+		} `json:"scenes"`
+		Suggestion string `json:"suggestion"`
+	} `json:"result"`
+}
+
+type StRespImageCensor struct {
+	Message string `json:"message"`
+	Code    int    `json:"code"`
+	Result  struct {
+		Scenes struct {
+			Terror struct {
+				Details []struct {
+					Score      float64 `json:"score"`
+					Suggestion string  `json:"suggestion"`
+					Label      string  `json:"label"`
+				} `json:"details"`
+				Suggestion string `json:"suggestion"`
+			} `json:"terror"`
+			Politician struct {
+				Suggestion string `json:"suggestion"`
+			} `json:"politician"`
+			Pulp struct {
+				Details []struct {
+					Score      float64 `json:"score"`
+					Suggestion string  `json:"suggestion"`
+					Label      string  `json:"label"`
+				} `json:"details"`
+				Suggestion string `json:"suggestion"`
+			} `json:"pulp"`
+		} `json:"scenes"`
+		Suggestion string `json:"suggestion"`
+	} `json:"result"`
+}
 
 // Upload 上传到qiniu
 func Upload(ctx context.Context, access string, secret string, zone *storage.Zone, bucket string, fileKey string, bs []byte) error {
@@ -117,4 +168,76 @@ GotoUpload:
 		return err
 	}
 	return nil
+}
+
+// TextCensor 脏字过滤
+func TextCensor(access string, secret string, text string) (*StRespTextCensor, error) {
+	mac := qbox.NewMac(access, secret)
+	query := gorequest.New().
+		Post("https://ai.qiniuapi.com/v3/text/censor").
+		Send(gin.H{
+			"data": gin.H{
+				"text": text,
+			},
+			"params": gin.H{
+				"scenes": []string{"antispam"},
+			},
+		}).
+		Timeout(time.Second * 10)
+	req, err := query.MakeRequest()
+	if err != nil {
+		return nil, err
+	}
+	token, err := mac.SignRequestV2(req)
+	if err != nil {
+		return nil, err
+	}
+	query.AppendHeader("Authorization", "Qiniu "+token)
+	_, respBody, errs := query.EndBytes()
+	if errs != nil {
+		return nil, err
+	}
+	mlog.Log.Debugf("TextCensor resp: %s", respBody)
+	var respObj StRespTextCensor
+	err = json.Unmarshal(respBody, &respObj)
+	if errs != nil {
+		return nil, err
+	}
+	return &respObj, nil
+}
+
+// ImageCensor 脏字过滤
+func ImageCensor(access string, secret string, uri string) (*StRespImageCensor, error) {
+	mac := qbox.NewMac(access, secret)
+	query := gorequest.New().
+		Post("https://ai.qiniuapi.com/v3/image/censor").
+		Send(gin.H{
+			"data": gin.H{
+				"uri": uri,
+			},
+			"params": gin.H{
+				"scenes": []string{"pulp", "terror", "politician", "ads"},
+			},
+		}).
+		Timeout(time.Second * 10)
+	req, err := query.MakeRequest()
+	if err != nil {
+		return nil, err
+	}
+	token, err := mac.SignRequestV2(req)
+	if err != nil {
+		return nil, err
+	}
+	query.AppendHeader("Authorization", "Qiniu "+token)
+	_, respBody, errs := query.EndBytes()
+	if errs != nil {
+		return nil, err
+	}
+	mlog.Log.Debugf("ImageCensor resp: %s", respBody)
+	var respObj StRespImageCensor
+	err = json.Unmarshal(respBody, &respObj)
+	if errs != nil {
+		return nil, err
+	}
+	return &respObj, nil
 }
