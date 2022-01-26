@@ -11,7 +11,7 @@ import (
 	"github.com/moremorefun/mtool/mredis"
 
 	"github.com/gin-gonic/gin"
-	"github.com/go-redis/redis"
+	"github.com/go-redis/redis/v8"
 	jsoniter "github.com/json-iterator/go"
 	"github.com/parnurzeal/gorequest"
 )

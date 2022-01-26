@@ -9,7 +9,7 @@ import (
 
 	"github.com/moremorefun/mtool/mdb"
 
-	"github.com/go-redis/redis"
+	"github.com/go-redis/redis/v8"
 	"github.com/moremorefun/mtool/mencrypt"
 
 	"github.com/moremorefun/mtool/mlog"
