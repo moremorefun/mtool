@@ -8,7 +8,7 @@ import (
 
 	"github.com/moremorefun/mtool/mlog"
 
-	"github.com/go-redis/redis"
+	"github.com/go-redis/redis/v8"
 )
 
 // baseKey 基础key
@@ -21,7 +21,7 @@ func Create(address string, password string, dbIndex int) *redis.Client {
 		Password: password, // no password set
 		DB:       dbIndex,  // use default DB
 	})
-	_, err := client.Ping().Result()
+	_, err := client.Ping(context.Background()).Result()
 	if err != nil {
 		mlog.Log.Fatalf("redis ping error: %s", err.Error())
 		return nil
@@ -37,7 +37,7 @@ func SetBaseKey(v string) {
 // Get 获取
 func Get(ctx context.Context, client *redis.Client, key string) (string, error) {
 	key = fmt.Sprintf("%s_%s", baseKey, key)
-	ret, err := client.WithContext(ctx).Get(key).Result()
+	ret, err := client.WithContext(ctx).Get(context.Background(), key).Result()
 	if err != nil {
 		// "redis: nil" 不存在
 		if !strings.Contains(err.Error(), "redis: nil") {
@@ -51,7 +51,7 @@ func Get(ctx context.Context, client *redis.Client, key string) (string, error) 
 // Set 设置
 func Set(ctx context.Context, client *redis.Client, key, value string, du time.Duration) error {
 	key = fmt.Sprintf("%s_%s", baseKey, key)
-	err := client.WithContext(ctx).Set(key, value, du).Err()
+	err := client.WithContext(ctx).Set(context.Background(), key, value, du).Err()
 	if err != nil {
 		return err
 	}
@@ -61,7 +61,7 @@ func Set(ctx context.Context, client *redis.Client, key, value string, du time.D
 // Rm 删除
 func Rm(ctx context.Context, client *redis.Client, key string) error {
 	key = fmt.Sprintf("%s_%s", baseKey, key)
-	err := client.WithContext(ctx).Del(key).Err()
+	err := client.WithContext(ctx).Del(context.Background(), key).Err()
 	if err != nil {
 		return err
 	}

@@ -7,11 +7,10 @@ require (
 	github.com/elazarl/goproxy v0.0.0-20210110162100-a92cc753f88e // indirect
 	github.com/gin-gonic/gin v1.7.2
 	github.com/go-redis/redis v6.15.9+incompatible
+	github.com/go-redis/redis/v8 v8.11.4 // indirect
 	github.com/go-sql-driver/mysql v1.6.0
 	github.com/jmoiron/sqlx v1.3.4
 	github.com/json-iterator/go v1.1.11
-	github.com/onsi/ginkgo v1.15.0 // indirect
-	github.com/onsi/gomega v1.10.5 // indirect
 	github.com/parnurzeal/gorequest v0.2.16
 	github.com/qiniu/go-sdk/v7 v7.9.7
 	github.com/satori/go.uuid v1.2.0
