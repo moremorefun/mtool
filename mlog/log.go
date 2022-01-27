@@ -30,7 +30,7 @@ func init() {
 	var err error
 	conf = zap.NewDevelopmentConfig()
 	conf.Encoding = "console"
-	conf.DisableStacktrace = false
+	conf.DisableStacktrace = true
 	ZapLog, err = conf.Build()
 	if err != nil {
 		log.Fatalf("build logger error: [%T] %s", err, err.Error())
@@ -43,7 +43,7 @@ func SetToProd() error {
 	var err error
 	conf.Development = false
 	conf.Encoding = "json"
-	conf.DisableStacktrace = false
+	conf.DisableStacktrace = true
 	conf.Level = zap.NewAtomicLevelAt(zap.WarnLevel)
 	ZapLog, err = conf.Build()
 	if err != nil {
