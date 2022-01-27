@@ -104,12 +104,14 @@ func GetLocalDayStrByStartHour(hour int) (string, error) {
 func GetLocalWeekStrByStartHour(hour int) (string, error) {
 	cstSh := time.FixedZone("CST", 8*3600)
 	now := time.Now().In(cstSh)
+	nowStr := now.Format("2006-01-02")
 
 	weekStartTime, err := GetLocalWeekStart()
 	if err != nil {
 		return "", err
 	}
-	if now.Hour() < hour {
+	weekStr := weekStartTime.Format("2006-01-02")
+	if now.Hour() < hour && nowStr == weekStr {
 		// 计入上一周
 		weekStartTime = weekStartTime.AddDate(0, 0, -7)
 	}
@@ -138,12 +140,14 @@ func GetLocalDayByStartHour(hour int) (time.Time, error) {
 func GetLocalWeekByStartHour(hour int) (time.Time, error) {
 	cstSh := time.FixedZone("CST", 8*3600)
 	now := time.Now().In(cstSh)
+	nowStr := now.Format("2006-01-02")
 
 	weekStartTime, err := GetLocalWeekStart()
 	if err != nil {
 		return time.Time{}, err
 	}
-	if now.Hour() < hour {
+	weekStr := weekStartTime.Format("2006-01-02")
+	if now.Hour() < hour && nowStr == weekStr {
 		// 计入上一周
 		weekStartTime = weekStartTime.AddDate(0, 0, -7)
 	}
@@ -174,12 +178,14 @@ func GetUnixLocalWeekStart(unixAt int64) (time.Time, error) {
 func GetUnixOfLocalWeekStrByStartHour(unixAt int64, hour int) (string, error) {
 	cstSh := time.FixedZone("CST", 8*3600)
 	now := time.Unix(unixAt, 0).In(cstSh)
+	nowStr := now.Format("2006-01-02")
 
 	weekStartTime, err := GetUnixLocalWeekStart(unixAt)
 	if err != nil {
 		return "", err
 	}
-	if now.Hour() < hour {
+	weekStr := weekStartTime.Format("2006-01-02")
+	if now.Hour() < hour && nowStr == weekStr {
 		// 计入上一周
 		weekStartTime = weekStartTime.AddDate(0, 0, -7)
 	}
