@@ -231,12 +231,12 @@ func TextCensor(access string, secret string, text string) (*StRespTextCensor, e
 	query.AppendHeader("Authorization", "Qiniu "+token)
 	_, respBody, errs := query.EndBytes()
 	if errs != nil {
-		return nil, err
+		return nil, errs[0]
 	}
 	mlog.Log.Debugf("TextCensor resp: %s", respBody)
 	var respObj StRespTextCensor
 	err = json.Unmarshal(respBody, &respObj)
-	if errs != nil {
+	if err != nil {
 		return nil, err
 	}
 	return &respObj, nil
@@ -267,12 +267,12 @@ func ImageCensor(access string, secret string, uri string) (*StRespImageCensor, 
 	query.AppendHeader("Authorization", "Qiniu "+token)
 	_, respBody, errs := query.EndBytes()
 	if errs != nil {
-		return nil, err
+		return nil, errs[0]
 	}
 	mlog.Log.Debugf("ImageCensor resp: %s", respBody)
 	var respObj StRespImageCensor
 	err = json.Unmarshal(respBody, &respObj)
-	if errs != nil {
+	if err != nil {
 		return nil, err
 	}
 	return &respObj, nil
